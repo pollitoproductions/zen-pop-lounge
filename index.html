@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link href="https://fonts.googleapis.com/css2?family=Limelight&display=swap" rel="stylesheet">
+<style>
+  body { 
+    margin: 0; padding: 0; 
+    background-color: #1a1a1a; 
+    overflow: hidden; 
+    font-family: 'Segoe UI', sans-serif;
+    touch-action: none; 
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  canvas { display: block; }
+
+  #ui {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  .hud-top { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    width: 100%;
+  }
+  
+  .stat-box { 
+    text-align: center; 
+    pointer-events: none; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .label { font-size: 12px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 1px 2px black; }
+  .value { font-size: 32px; font-weight: 800; color: #fff; line-height: 1; margin-bottom: 5px; text-shadow: 0 2px 4px black; }
+
+  .icon-btn {
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.15); 
+    border: 2px solid rgba(0, 0, 0, 0.6); 
+    color: #fff;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    margin-top: 5px;
+    cursor: pointer;
+    display: flex; 
+    justify-content: center; align-items: center;
+    backdrop-filter: blur(2px);
+    transition: transform 0.1s, background 0.2s;
+    outline: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  }
+  
+  .icon-btn svg { width: 24px; height: 24px; fill: #fff; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8)); }
+  .icon-btn:hover { background: rgba(255,255,255,0.3); }
+  .icon-btn:active { transform: scale(0.90); }
+
+  @media (max-height: 500px) and (orientation: landscape) {
+    .hud-top { padding: 0 20px; top: 10px; }
+    .stat-box { align-items: flex-start; }
+    .stat-box:last-child { align-items: flex-end; }
+    .value { font-size: 20px; }
+    .icon-btn { width: 30px; height: 30px; margin-top: 5px; }
+    .icon-btn svg { width: 18px; height: 18px; }
+  }
+
+  #overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: flex; flex-direction: column; 
+    justify-content: center; align-items: center;
+    pointer-events: auto;
+    z-index: 100;
+    transition: opacity 0.3s;
+    text-align: center;
+  }
+  
+  #overlay h2 { 
+    color: #fff; 
+    font-family: 'Limelight', cursive;
+    font-size: 64px;
+    letter-spacing: 2px;
+    margin: 0 0 10px 0; 
+    text-shadow: 0 0 15px rgba(255, 75, 43, 0.6);
+  }
+  
+  #overlay p { color: #ccc; font-size: 18px; margin: 0 0 30px 0; max-width: 80%; line-height: 1.4; padding: 0 20px; }
+  
+  .btn {
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    color: white; border: none;
+    padding: 15px 40px; font-size: 20px;
+    border-radius: 50px; font-weight: bold;
+    box-shadow: 0 10px 20px rgba(255, 75, 43, 0.4);
+    cursor: pointer; transition: transform 0.1s;
+    outline: none;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  .btn:active { transform: scale(0.95); }
+  
+  .copyright {
+    position: absolute; bottom: 20px;
+    color: #666; font-size: 12px; font-weight: 400; letter-spacing: 0.5px;
+  }
+
+  #reset-btn { 
+    display: none; 
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    align-self: center;
+    cursor: pointer;
+    margin-bottom: 20px;
+    backdrop-filter: blur(4px);
+  }
+  #reset-btn:active { background: rgba(255, 255, 255, 0.4); }
+
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <h2 id="overlay-title">Boredom Burst</h2>
+  <p id="overlay-msg">Drag and release anywhere to throw.</p>
+  <button class="btn" id="main-btn">TAP TO PLAY</button>
+  <div class="copyright">&copy; Brant Fuller 2026</div>
+</div>
+
+<div id="ui">
+  <div class="hud-top">
+    <div class="stat-box">
+      <div class="label">Popped</div>
+      <div class="value" id="popped">0</div>
+      <button class="icon-btn" id="ingame-restart" title="Restart">
+        <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+      </button>
+      <button class="icon-btn" id="ingame-mute" title="Mute Music">
+        <svg id="mute-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      </button>
+    </div>
+    <div class="stat-box">
+      <div class="label">Throws</div>
+      <div class="value" id="throws">0</div>
+    </div>
+  </div>
+  <button id="reset-btn">TRY AGAIN</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+// --- AUDIO SYSTEM ---
+const Sound = {
+  ctx: null,
+  masterGain: null,
+  muted: false,
+  musicInterval: null,
+  
+  init: function() {
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+    if(!this.ctx) {
+      this.ctx = new AudioContext();
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.value = 1.0;
+      this.masterGain.connect(this.ctx.destination);
+    }
+    if(this.ctx.state === 'suspended') this.ctx.resume();
+  },
+  
+  killAudio: function() {
+    if(this.masterGain) {
+        this.masterGain.gain.cancelScheduledValues(0);
+        this.masterGain.gain.value = 0;
+    }
+    if(this.ctx) this.ctx.suspend();
+    this.stopMusic();
+  },
+
+  resumeAudio: function() {
+    if(this.ctx) {
+        this.ctx.resume();
+        if(this.masterGain) this.masterGain.gain.value = 1.0;
+    }
+    if(!this.muted) this.startLoungeMusic();
+  },
+
+  toggleMute: function() {
+    this.muted = !this.muted;
+    if(this.muted) this.stopMusic();
+    else this.startLoungeMusic();
+    return this.muted;
+  },
+
+  pop: function() {
+    if(!this.ctx || this.muted) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.frequency.setValueAtTime(800, t);
+    osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
+    gain.gain.setValueAtTime(0.3, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start();
+    osc.stop(t + 0.15);
+  },
+  
+  throw: function() {
+    if(!this.ctx || this.muted) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(100, t);
+    osc.frequency.linearRampToValueAtTime(300, t + 0.2);
+    gain.gain.setValueAtTime(0.0, t);
+    gain.gain.linearRampToValueAtTime(0.1, t + 0.1);
+    gain.gain.linearRampToValueAtTime(0.0, t + 0.3);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start();
+    osc.stop(t + 0.3);
+  },
+  
+  win: function() {
+    if(!this.ctx || this.muted) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, t);
+    osc.frequency.setValueAtTime(600, t + 0.1);
+    osc.frequency.setValueAtTime(800, t + 0.2);
+    gain.gain.setValueAtTime(0.2, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.5);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start();
+    osc.stop(t + 0.5);
+  },
+
+  playChord: function(freqs, duration) {
+    if(!this.ctx || this.muted) return;
+    const t = this.ctx.currentTime;
+    freqs.forEach((f, i) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = f + (Math.random() * 2 - 1); 
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.08 - (i*0.01), t + 0.05); 
+        gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start();
+        osc.stop(t + duration + 0.1);
+    });
+  },
+  
+  startLoungeMusic: function() {
+    if(this.musicInterval) clearInterval(this.musicInterval);
+    if(this.muted) return;
+    let step = 0;
+    const progression = [[293.66,349.23,415.30,523.25],[196.00,349.23,415.30,493.88],[261.63,329.63,392.00,493.88],[220.00,277.18,349.23,415.30]];
+    const playStep = () => {
+        if(this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+        this.playChord(progression[step % 4], 2.5);
+        step++;
+    };
+    playStep();
+    this.musicInterval = setInterval(playStep, 2500);
+  },
+  
+  stopMusic: function() {
+    if(this.musicInterval) clearInterval(this.musicInterval);
+    this.musicInterval = null;
+  }
+};
+
+// --- CONFIG ---
+const CONFIG = {
+  gravity: 0.25,
+  drag: 0.992,
+  forceMulti: 0.55,
+  maxSpeed: 45,
+  balloonSpeed: 1.5
+};
+
+// --- REFS ---
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const poppedEl = document.getElementById('popped');
+const throwsEl = document.getElementById('throws');
+const resetBtn = document.getElementById('reset-btn');
+const restartIconBtn = document.getElementById('ingame-restart'); 
+const muteBtn = document.getElementById('ingame-mute');
+const muteIcon = document.getElementById('mute-icon');
+const overlay = document.getElementById('overlay');
+const mainBtn = document.getElementById('main-btn');
+const overlayTitle = document.getElementById('overlay-title');
+const overlayMsg = document.getElementById('overlay-msg');
+
+let width, height;
+let balloons = [];
+let particles = [];
+let poppedCount = 0; 
+let throwCount = 0;
+let gameRunning = false;
+let activeCount = 0;
+let totalBalloons = 0;
+
+let dart = { x: 0, y: 0, vx: 0, vy: 0, angle: -Math.PI/4, state: 'idle' };
+let input = { active: false, startX: 0, startY: 0, currX: 0, currY: 0, time: 0 };
+
+// --- VISIBILITY ---
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    Sound.killAudio(); 
+  } else {
+    Sound.resumeAudio();
+    lastTime = performance.now();
+    if(gameRunning) requestAnimationFrame(loop);
+  }
+});
+window.addEventListener('beforeunload', () => Sound.killAudio());
+
+// --- INIT & RESIZE ---
+mainBtn.addEventListener('click', () => {
+  Sound.init();
+  Sound.startLoungeMusic();
+  startGame();
+});
+
+restartIconBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); 
+    Sound.init();
+    startGame();
+});
+
+resetBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  resetDartPos();
+});
+
+muteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isMuted = Sound.toggleMute();
+    if(isMuted) {
+        muteIcon.innerHTML = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
+    } else {
+        muteIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
+    }
+});
+
+function resize() {
+  width = window.innerWidth;
+  height = window.innerHeight;
+  canvas.width = width;
+  canvas.height = height;
+  
+  if (gameRunning && balloons.length > 0) {
+    reflowBalloons();
+    if(dart.state === 'idle') {
+      dart.x = Math.min(100, width * 0.15);
+      dart.y = height - 50;
+    }
+  }
+}
+window.addEventListener('resize', resize);
+
+function startGame() {
+  overlay.style.display = 'none';
+  gameRunning = true;
+  poppedCount = 0;
+  throwCount = 0;
+  balloons = [];
+  poppedEl.innerText = '0';
+  throwsEl.innerText = '0';
+  
+  width = window.innerWidth;
+  height = window.innerHeight;
+  canvas.width = width;
+  canvas.height = height;
+  
+  spawnBalloons();
+  resetDartPos();
+  requestAnimationFrame(loop);
+}
+
+// --- SMART REFLOW LOGIC (MODIFIED FOR OFFSET LAYOUT) ---
+function reflowBalloons() {
+  const spacing = 50;
+  const vSpacing = 55; // Slightly more vertical space for tails
+  const sideMargin = 40;
+  const cols = Math.max(1, Math.floor((width - (sideMargin * 2)) / spacing));
+  
+  const startX = (width - (cols * spacing)) / 2;
+  const startY = 60;
+
+  balloons.forEach((b, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    
+    // Offset every other row (brick/honeycomb layout)
+    const rowOffset = (row % 2 === 0) ? 0 : (spacing / 2);
+    
+    // Maintain the random jitter from spawn
+    b.x = startX + col * spacing + rowOffset + (spacing/2) + b.jitterX;
+    b.y = startY + row * vSpacing;
+  });
+}
+
+function spawnBalloons() {
+  const safeHeight = height * 0.55; 
+  const spacing = 50; 
+  const vSpacing = 55;
+  
+  let rows = Math.floor(safeHeight / vSpacing);
+  rows = Math.max(3, Math.min(7, rows));
+  
+  const sideMargin = 40; 
+  const cols = Math.floor((width - (sideMargin * 2)) / spacing);
+  const startX = (width - (cols * spacing)) / 2;
+  const startY = 60; 
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (Math.random() > 0.9) continue; 
+      
+      // Offset every other row
+      const rowOffset = (r % 2 === 0) ? 0 : (spacing / 2);
+      
+      // Add random jitter so columns aren't straight lines
+      const jitterX = (Math.random() * 14) - 7;
+      
+      balloons.push({
+        x: startX + c * spacing + rowOffset + (spacing/2) + jitterX,
+        y: startY + r * vSpacing,
+        jitterX: jitterX, // Store jitter for resize reflow
+        r: 22,
+        hue: Math.floor(Math.random() * 360),
+        active: true,
+        vx: (Math.random() - 0.5) * CONFIG.balloonSpeed,
+        vy: (Math.random() - 0.5) * CONFIG.balloonSpeed
+      });
+    }
+  }
+  if(balloons.length === 0) balloons.push({x: width/2, y: 100, jitterX:0, r: 22, hue: 0, active:true, vx:0, vy:0});
+  
+  totalBalloons = balloons.length;
+  activeCount = balloons.length;
+}
+
+function resetDartPos() {
+  dart.x = Math.min(100, width * 0.15); 
+  dart.y = height - 50; 
+  dart.vx = 0; dart.vy = 0;
+  dart.angle = -Math.PI / 4;
+  dart.state = 'idle';
+  resetBtn.style.display = 'none'; 
+}
+
+function showGameOver() {
+  gameRunning = false;
+  Sound.win();
+  Sound.stopMusic();
+  if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
+  overlayTitle.innerText = "CLEARED!";
+  overlayMsg.innerText = `You popped all ${totalBalloons} balloons in ${throwCount} throws.`;
+  mainBtn.innerText = "PLAY AGAIN";
+  overlay.style.display = 'flex';
+}
+
+// --- INPUT ---
+function getPoint(e) {
+  const r = canvas.getBoundingClientRect();
+  const t = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+  return { x: (t ? t.clientX : e.clientX) - r.left, y: (t ? t.clientY : e.clientY) - r.top };
+}
+
+function inputStart(e) {
+  if(e.target === restartIconBtn || e.target === muteBtn || e.target === resetBtn || 
+     muteBtn.contains(e.target) || restartIconBtn.contains(e.target)) return;
+     
+  if (!gameRunning || dart.state !== 'idle') return;
+  if(e.cancelable) e.preventDefault();
+  input.active = true;
+  const p = getPoint(e);
+  input.startX = p.x; input.startY = p.y;
+  input.currX = p.x; input.currY = p.y;
+  input.time = Date.now();
+}
+
+function inputMove(e) {
+  if (!input.active) return;
+  if(e.cancelable) e.preventDefault();
+  const p = getPoint(e);
+  input.currX = p.x; input.currY = p.y;
+}
+
+function inputEnd(e) {
+  if (!input.active) return;
+  if(e.cancelable) e.preventDefault();
+  input.active = false;
+  
+  const dt = Date.now() - input.time;
+  const dx = input.currX - input.startX;
+  const dy = input.currY - input.startY;
+  
+  if (dt < 30 || Math.hypot(dx, dy) < 15) return;
+
+  throwCount++;
+  throwsEl.innerText = throwCount;
+
+  let vx = dx / dt * 25 * CONFIG.forceMulti;
+  let vy = dy / dt * 25 * CONFIG.forceMulti;
+  if (vx > 0 && vy > -5) vy -= 5;
+
+  const speed = Math.hypot(vx, vy);
+  if (speed > CONFIG.maxSpeed) {
+    const r = CONFIG.maxSpeed / speed;
+    vx *= r; vy *= r;
+  }
+  dart.vx = vx; dart.vy = vy;
+  dart.state = 'flying';
+  Sound.throw();
+}
+
+['mousedown','touchstart'].forEach(ev => canvas.addEventListener(ev, inputStart, {passive:false}));
+['mousemove','touchmove'].forEach(ev => window.addEventListener(ev, inputMove, {passive:false}));
+['mouseup','touchend'].forEach(ev => window.addEventListener(ev, inputEnd, {passive:false}));
+
+// --- GAME LOGIC ---
+function update(dt) {
+  if (dart.state === 'flying') {
+    dart.x += dart.vx * dt; 
+    dart.y += dart.vy * dt;
+    dart.vy += CONFIG.gravity * dt;
+    dart.vx *= Math.pow(CONFIG.drag, dt); 
+    dart.vy *= Math.pow(CONFIG.drag, dt);
+    dart.angle = Math.atan2(dart.vy, dart.vx);
+
+    if(Math.abs(dart.vx) < 0.1 && Math.abs(dart.vy) < 0.1) {
+        dart.state = 'stuck'; 
+        resetBtn.style.display = 'block'; 
+    }
+
+    if (dart.x < -50 || dart.x > width + 50 || dart.y > height + 50) {
+      dart.state = 'landed';
+      setTimeout(resetDartPos, 200);
+    }
+
+    const tipX = dart.x + Math.cos(dart.angle) * 20;
+    const tipY = dart.y + Math.sin(dart.angle) * 20;
+
+    for (let b of balloons) {
+      if (!b.active) continue;
+      const dist = Math.hypot(tipX - b.x, tipY - b.y);
+      if (dist < b.r + 7) {
+        b.active = false;
+        activeCount--;
+        createPop(b.x, b.y, b.hue);
+        poppedCount++;
+        poppedEl.innerText = poppedCount;
+        Sound.pop();
+        if(navigator.vibrate) navigator.vibrate(15); 
+        if(activeCount <= 0) setTimeout(showGameOver, 500); 
+      }
+    }
+  }
+
+  const remainingPct = activeCount / totalBalloons;
+  if (remainingPct <= 0.10 && activeCount > 0) {
+    for (let b of balloons) {
+      if (!b.active) continue;
+      b.x += b.vx * dt; 
+      b.y += b.vy * dt;
+      if (b.x < b.r) { b.x = b.r; b.vx *= -1; }
+      if (b.x > width - b.r) { b.x = width - b.r; b.vx *= -1; }
+      if (b.y < b.r) { b.y = b.r; b.vy *= -1; }
+      if (b.y > height - b.r) { b.y = height - b.r; b.vy *= -1; }
+    }
+  }
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    let p = particles[i];
+    p.x += p.vx * dt; p.y += p.vy * dt;
+    p.vy += 0.15 * dt; p.life -= 0.02 * dt;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+function createPop(x, y, hue) {
+  for (let i = 0; i < 12; i++) {
+    const a = Math.random() * 6.28;
+    const s = Math.random() * 5 + 2;
+    particles.push({
+      x: x, y: y,
+      vx: Math.cos(a)*s, vy: Math.sin(a)*s,
+      hue: hue, life: 1.0
+    });
+  }
+}
+
+function drawBalloon(b) {
+  // Draw Tail (String) first so it is "behind" the balloon body
+  // Updated to be longer and curvier to fit between balloons below
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(b.x, b.y + b.r + 6);
+  // S-Curve Bezier
+  ctx.bezierCurveTo(
+    b.x + 8, b.y + b.r + 15,  // Control Point 1
+    b.x - 8, b.y + b.r + 35,  // Control Point 2
+    b.x, b.y + b.r + 48       // End Point (Longer)
+  );
+  ctx.stroke();
+
+  // Draw Body
+  let grad = ctx.createRadialGradient(b.x - 8, b.y - 8, 2, b.x, b.y, b.r);
+  grad.addColorStop(0, `hsla(${b.hue}, 100%, 85%, 1)`);
+  grad.addColorStop(0.4, `hsla(${b.hue}, 80%, 55%, 1)`);
+  grad.addColorStop(1, `hsla(${b.hue}, 90%, 35%, 1)`);
+  ctx.fillStyle = grad;
+  ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill();
+  
+  // Draw Knot
+  ctx.fillStyle = `hsla(${b.hue}, 90%, 35%, 1)`;
+  ctx.beginPath();
+  ctx.moveTo(b.x - 4, b.y + b.r - 2);
+  ctx.lineTo(b.x + 4, b.y + b.r - 2);
+  ctx.lineTo(b.x, b.y + b.r + 6);
+  ctx.fill();
+}
+
+function drawDartObj(x, y, angle) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur = 8; ctx.shadowOffsetY = 8;
+
+  // Flight
+  ctx.beginPath();
+  ctx.moveTo(-45, -12); ctx.lineTo(-25, 0); ctx.lineTo(-45, 12); ctx.lineTo(-50, 0); ctx.closePath();
+  ctx.fillStyle = '#fff'; ctx.fill();
+  ctx.fillStyle = '#111';
+  ctx.beginPath();
+  ctx.moveTo(-45, -12); ctx.lineTo(-35, -6); ctx.lineTo(-35, 0); ctx.lineTo(-50, 0); ctx.fill();
+  ctx.moveTo(-35, 0); ctx.lineTo(-25, 0); ctx.lineTo(-35, 6); ctx.lineTo(-35, 12); ctx.fill();
+  ctx.shadowColor = 'transparent'; 
+
+  // Body
+  let bodyGrad = ctx.createLinearGradient(0, -4, 0, 4);
+  bodyGrad.addColorStop(0, '#555');   
+  bodyGrad.addColorStop(0.3, '#ddd'); 
+  bodyGrad.addColorStop(0.7, '#ddd'); 
+  bodyGrad.addColorStop(1, '#555');   
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.roundRect(-25, -4, 45, 8, 2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+  ctx.lineWidth = 1;
+  for(let i=0; i<5; i++) {
+      ctx.beginPath(); ctx.moveTo(-20 + (i*6), -4); ctx.lineTo(-20 + (i*6), 4); ctx.stroke();
+  }
+  // Shaft & Tip
+  ctx.fillStyle = '#333'; ctx.fillRect(-28, -2, 3, 4);
+  ctx.fillStyle = '#eee';
+  ctx.beginPath(); ctx.moveTo(20, -2); ctx.lineTo(20, 2); ctx.lineTo(38, 0); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+  ctx.beginPath(); ctx.moveTo(22, -1); ctx.lineTo(32, -0.5); ctx.stroke();
+  ctx.restore();
+}
+
+function draw() {
+  let bg = ctx.createRadialGradient(width/2, height/2, width/4, width/2, height/2, width);
+  bg.addColorStop(0, '#2c3e50'); bg.addColorStop(1, '#000000');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, width, height);
+
+  // --- DRAWING OFF-SCREEN INDICATOR ---
+  if (dart.state === 'flying' && dart.y < -10) {
+     ctx.save();
+     ctx.translate(dart.x, 20); // Pin to top
+     
+     // Draw a small directional arrow/mini-dart
+     ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+     ctx.beginPath();
+     ctx.moveTo(0, -8); // Tip pointing up
+     ctx.lineTo(8, 6);
+     ctx.lineTo(0, 2);  // Notch
+     ctx.lineTo(-8, 6);
+     ctx.closePath();
+     ctx.fill();
+     
+     ctx.restore();
+  }
+
+  if (input.active && dart.state === 'idle') {
+    ctx.beginPath();
+    ctx.moveTo(input.startX, input.startY);
+    ctx.lineTo(input.currX, input.currY);
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([10, 10]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  for (let b of balloons) { if (b.active) drawBalloon(b); }
+  
+  // Only draw dart if it is somewhat on screen
+  if (dart.y > -50) {
+     drawDartObj(dart.x, dart.y, dart.angle);
+  }
+  
+  for (let p of particles) {
+    ctx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${p.life})`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+let lastTime = 0;
+function loop(timestamp) {
+  if(!gameRunning || document.hidden) return;
+  if(!lastTime) lastTime = timestamp;
+  const deltaTime = timestamp - lastTime;
+  lastTime = timestamp;
+  let speedFactor = deltaTime / 16.67;
+  if(speedFactor > 4) speedFactor = 1; 
+
+  update(speedFactor);
+  draw();
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
