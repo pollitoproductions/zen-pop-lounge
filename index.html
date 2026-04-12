@@ -1418,6 +1418,8 @@ function drawThemeBalloonPreview(themeName) {
   });
   
   previewEl.innerHTML = '';
+  canvas.style.width = '100%';
+  canvas.style.height = 'auto';
   previewEl.appendChild(canvas);
 }
 
@@ -1671,6 +1673,8 @@ soundList.addEventListener('click', e => {
 const savedPopSound = localStorage.getItem('zenPopSound');
 if(savedPopSound && Sound.popSounds[savedPopSound]) currentPopSound = savedPopSound;
 
+// Load saved theme
+const savedTheme = localStorage.getItem('zenPopTheme');
 if (savedTheme && THEMES[savedTheme]) {
   currentTheme = savedTheme;
 }
@@ -1747,6 +1751,7 @@ window.addEventListener('resize', resize);
 function startGame() {
   overlay.style.display = 'none';
   themeModal.classList.remove('open');
+  soundModal.classList.remove('open');
   gameRunning = true;
   poppedCount = 0;
   throwCount = 0;
