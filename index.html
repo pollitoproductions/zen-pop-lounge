@@ -1723,22 +1723,16 @@ function drawDartPreview(key, canvas) {
 }
 
 function initDartPicker() {
-  const categories = [];
-  const seen = {};
-  DART_STYLES.forEach(s => { if(!seen[s.category]) { seen[s.category] = true; categories.push(s.category); } });
   let html = '';
-  categories.forEach(cat => {
-    html += `<div class="sound-category-label">${cat}</div>`;
-    DART_STYLES.filter(s => s.category === cat).forEach(s => {
-      const active = s.key === currentDartStyle ? ' active' : '';
-      html += `<div class="sound-item${active}" data-dart="${s.key}">
-        <canvas class="dart-item-preview" id="dart-prev-${s.key}" width="90" height="36"></canvas>
-        <div class="dart-item-text">
-          <span class="sound-item-name">${s.name}</span>
-          <span class="sound-item-desc">${s.desc}</span>
-        </div>
-      </div>`;
-    });
+  DART_STYLES.forEach(s => {
+    const active = s.key === currentDartStyle ? ' active' : '';
+    html += `<div class="sound-item${active}" data-dart="${s.key}">
+      <canvas class="dart-item-preview" id="dart-prev-${s.key}" width="90" height="36"></canvas>
+      <div class="dart-item-text">
+        <span class="sound-item-name">${s.name}</span>
+        <span class="sound-item-desc">${s.desc}</span>
+      </div>
+    </div>`;
   });
   dartList.innerHTML = html;
   DART_STYLES.forEach(s => {
