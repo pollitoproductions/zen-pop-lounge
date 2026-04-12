@@ -369,27 +369,76 @@ const Sound = {
         osc.stop(t + duration + 0.1);
     });
   },
-  
+
+  playBrownNoise: function() {
+    if (!this.ctx || this.muted) return;
+    this.stopBrownNoise();
+    const bufferSize = this.ctx.sampleRate * 4;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let lastOut = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      data[i] = (lastOut + (0.02 * white)) / 1.02;
+      lastOut = data[i];
+      data[i] *= 3.5;
+    }
+    const source = this.ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 300;
+    const gainNode = this.ctx.createGain();
+    gainNode.gain.value = 0.12;
+    source.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(this.masterGain);
+    source.start();
+    this.brownNoiseSource = source;
+  },
+
+  stopBrownNoise: function() {
+    if (this.brownNoiseSource) {
+      try { this.brownNoiseSource.stop(); } catch(e) {}
+      this.brownNoiseSource = null;
+    }
+  },
+
   getThemeMusic: function() {
     const theme = currentTheme;
     const musicMap = {
-      default: [[293.66,349.23,415.30,523.25],[196.00,349.23,415.30,493.88],[261.63,329.63,392.00,493.88],[220.00,277.18,349.23,415.30]],
-      sakura: [[329.63,392.00,493.88,587.33],[293.66,349.23,440.00,523.25],[349.23,415.30,523.25,659.25],[329.63,392.00,493.88,587.33]],
-      aquarium: [[130.81,164.81,196.00,246.94],[146.83,174.61,220.00,277.18],[164.81,196.00,246.94,329.63],[146.83,174.61,220.00,277.18]],
-      midnight: [[138.59,184.99,246.94,329.63],[164.81,220.00,293.33,392.00],[174.61,233.08,311.13,415.30],[164.81,220.00,293.33,392.00]],
-      cafe: [[87.31,110.00,130.81,164.81],[98.00,123.47,146.83,196.00],[110.00,130.81,164.81,196.00],[123.47,146.83,196.00,246.94]],
-      cosmic: [[246.94,329.63,415.30,523.25],[196.00,261.63,329.63,415.30],[293.66,392.00,493.88,587.33],[349.23,466.16,587.33,698.46]],
-      autumn: [[110.00,146.83,196.00,246.94],[123.47,164.81,220.00,293.66],[130.81,174.61,233.08,311.13],[146.83,196.00,261.63,349.23]],
-      glacial: [[261.63,329.63,392.00,523.25],[293.66,369.99,440.00,587.33],[329.63,415.30,493.88,659.25],[293.66,369.99,440.00,587.33]],
-      minimalist: [[110.00,220.00,330.00,440.00],[110.00,220.00,330.00,440.00],[110.00,220.00,330.00,440.00],[110.00,220.00,330.00,440.00]],
-      riverstone: [[98.00,130.81,164.81,196.00],[110.00,146.83,196.00,220.00],[123.47,164.81,196.00,246.94],[110.00,146.83,196.00,220.00]]
+      default:        [[293.66,349.23,415.30,523.25],[196.00,349.23,415.30,493.88],[261.63,329.63,392.00,493.88],[220.00,277.18,349.23,415.30]],
+      sakura:         [[329.63,392.00,493.88,587.33],[293.66,349.23,440.00,523.25],[349.23,415.30,523.25,659.25],[329.63,392.00,493.88,587.33]],
+      aquarium:       [[130.81,164.81,196.00,246.94],[146.83,174.61,220.00,277.18],[164.81,196.00,246.94,329.63],[146.83,174.61,220.00,277.18]],
+      midnight:       [[138.59,184.99,246.94,329.63],[164.81,220.00,293.33,392.00],[174.61,233.08,311.13,415.30],[164.81,220.00,293.33,392.00]],
+      cafe:           [[87.31,110.00,130.81,164.81],[98.00,123.47,146.83,196.00],[110.00,130.81,164.81,196.00],[123.47,146.83,196.00,246.94]],
+      cosmic:         [[246.94,329.63,415.30,523.25],[196.00,261.63,329.63,415.30],[293.66,392.00,493.88,587.33],[349.23,466.16,587.33,698.46]],
+      autumn:         [[110.00,146.83,196.00,246.94],[123.47,164.81,220.00,293.66],[130.81,174.61,233.08,311.13],[146.83,196.00,261.63,349.23]],
+      glacial:        [[261.63,329.63,392.00,523.25],[293.66,369.99,440.00,587.33],[329.63,415.30,493.88,659.25],[293.66,369.99,440.00,587.33]],
+      minimalist:     [[110.00,220.00,330.00,440.00],[110.00,220.00,330.00,440.00],[110.00,220.00,330.00,440.00],[110.00,220.00,330.00,440.00]],
+      velvet:         [[87.31,116.54,155.56,207.65],[73.42,87.31,110.00,146.83],[82.41,110.00,138.59,184.99],[77.78,103.83,130.81,164.81]],
+      origami:        [[392.00,493.88,622.25,739.99],[349.23,440.00,554.37,659.25],[415.30,523.25,659.25,783.99],[392.00,493.88,622.25,739.99]],
+      matcha:         [[146.83,174.61,220.00,261.63],[164.81,196.00,246.94,293.66],[130.81,164.81,196.00,246.94],[110.00,146.83,174.61,220.00]],
+      neonsynth:      [[277.18,369.99,493.88,659.25],[311.13,415.30,554.37,739.99],[329.63,440.00,587.33,783.99],[311.13,415.30,554.37,739.99]],
+      honeycomb:      [[87.31,116.54,138.59,185.00],[73.42,98.00,123.47,164.81],[82.41,110.00,130.81,174.61],[87.31,116.54,138.59,185.00]],
+      cloud:          [[523.25,659.25,783.99,987.77],[587.33,739.99,880.00,1108.73],[493.88,622.25,783.99,987.77],[523.25,659.25,783.99,987.77]],
+      crystal_cavern: [[155.56,196.00,246.94,311.13],[138.59,174.61,220.00,277.18],[164.81,207.65,261.63,329.63],[155.56,196.00,246.94,311.13]],
+      clockwork:      [[220.00,293.66,369.99,440.00],[196.00,261.63,329.63,392.00],[207.65,277.18,349.23,415.30],[220.00,293.66,369.99,440.00]],
+      beach:          [[174.61,220.00,261.63,329.63],[164.81,207.65,246.94,311.13],[184.99,233.08,277.18,349.23],[174.61,220.00,261.63,329.63]]
     };
     return musicMap[theme] || musicMap.default;
   },
   
   startLoungeMusic: function() {
     if(this.musicInterval) clearInterval(this.musicInterval);
+    this.stopBrownNoise();
     if(this.muted) return;
+    // Riverstone uses brown noise instead of chord music
+    if (currentTheme === 'riverstone') {
+      this.playBrownNoise();
+      return;
+    }
     let step = 0;
     const progression = this.getThemeMusic();
     const playStep = () => {
@@ -404,6 +453,7 @@ const Sound = {
   stopMusic: function() {
     if(this.musicInterval) clearInterval(this.musicInterval);
     this.musicInterval = null;
+    this.stopBrownNoise();
   }
 };
 
@@ -418,6 +468,27 @@ const CONFIG = {
 
 // --- THEMES ---
 const THEMES = {
+  riverstone: {
+    name: 'Riverstone Zen',
+    vibe: 'Grounded & deeply meditative',
+    previewGradient: 'linear-gradient(135deg, #b5a99a, #7c7168)',
+    bgGradient: (ctx, w, h) => {
+      let bg = ctx.createRadialGradient(w/2, h/2, w/6, w/2, h/2, w);
+      bg.addColorStop(0, '#c4b8ac'); bg.addColorStop(1, '#7a6e66');
+      return bg;
+    },
+    balloonStyle: (b, ctx) => {
+      let grad = ctx.createRadialGradient(b.x - 3, b.y - 3, 1, b.x + 2, b.y + 2, b.r);
+      grad.addColorStop(0, '#b0a89f');
+      grad.addColorStop(0.5, '#7d7570');
+      grad.addColorStop(1, '#4e4a47');
+      return grad;
+    },
+    stringColor: 'rgba(100,90,80,0)',
+    particleStyle: (p) => `rgba(139, 134, 128, ${p.life * 0.6})`,
+    targetShape: 'pebble',
+    particles: 'ripple'
+  },
   default: {
     name: 'Default',
     vibe: 'Classic zen experience',
@@ -603,26 +674,188 @@ const THEMES = {
     targetShape: 'square',
     particles: 'none'
   },
-  riverstone: {
-    name: 'Riverstone Zen',
-    vibe: 'Grounded & meditative',
-    previewGradient: 'linear-gradient(135deg, #c9a876, #6b8e23)',
+  velvet: {
+    name: 'Velvet Speakeasy',
+    vibe: 'Smooth, sophisticated, dimly lit',
+    previewGradient: 'linear-gradient(135deg, #2a0a0a, #0a0505)',
     bgGradient: (ctx, w, h) => {
-      let bg = ctx.createRadialGradient(w/2, h/2, w/4, w/2, h/2, w);
-      bg.addColorStop(0, '#d4a89a'); bg.addColorStop(1, '#8b7765');
+      let bg = ctx.createRadialGradient(w/2, h/2, w/6, w/2, h/2, w);
+      bg.addColorStop(0, '#2a0a0a'); bg.addColorStop(1, '#0a0505');
       return bg;
     },
     balloonStyle: (b, ctx) => {
-      let grad = ctx.createRadialGradient(b.x - 8, b.y - 8, 2, b.x, b.y, b.r);
-      grad.addColorStop(0, '#c5bcb1');
-      grad.addColorStop(0.4, '#8b8680');
-      grad.addColorStop(1, '#6b8e23');
+      let grad = ctx.createRadialGradient(b.x - 6, b.y - 6, 2, b.x, b.y, b.r);
+      grad.addColorStop(0, '#d4a017');
+      grad.addColorStop(0.4, '#8b0000');
+      grad.addColorStop(1, '#3d0000');
       return grad;
     },
-    stringColor: 'rgba(107, 142, 35, 0.25)',
-    particleStyle: (p) => `rgba(139, 134, 128, ${p.life * 0.7})`,
-    targetShape: 'pebble',
-    particles: 'ripple'
+    stringColor: 'rgba(184, 134, 11, 0.4)',
+    particleStyle: (p) => `rgba(212, 160, 23, ${p.life})`,
+    targetShape: 'vinyl'
+  },
+  origami: {
+    name: 'Origami Papercraft',
+    vibe: 'Crafted, gentle, satisfying',
+    previewGradient: 'linear-gradient(135deg, #faf6ef, #e8ddd0)',
+    bgGradient: (ctx, w, h) => {
+      let bg = ctx.createRadialGradient(w/2, h/2, w/6, w/2, h/2, w);
+      bg.addColorStop(0, '#faf6ef'); bg.addColorStop(1, '#e8ddd0');
+      return bg;
+    },
+    balloonStyle: (b, ctx) => {
+      const pastels = ['#b5ead7','#ffdac1','#c7ceea','#e2f0cb','#f8c8d4'];
+      const color = pastels[Math.floor(b.hue / 72) % 5];
+      let grad = ctx.createRadialGradient(b.x - 6, b.y - 6, 2, b.x, b.y, b.r);
+      grad.addColorStop(0, '#fffef8');
+      grad.addColorStop(0.5, color);
+      grad.addColorStop(1, color);
+      return grad;
+    },
+    stringColor: 'rgba(150, 130, 110, 0.3)',
+    particleStyle: (p) => `rgba(180, 160, 140, ${p.life * 0.7})`,
+    targetShape: 'paper'
+  },
+  matcha: {
+    name: 'Matcha Ceremony',
+    vibe: 'Grounding, organic, peaceful',
+    previewGradient: 'linear-gradient(135deg, #d4e8b0, #4a7c2f)',
+    bgGradient: (ctx, w, h) => {
+      let bg = ctx.createRadialGradient(w/2, h/2, w/6, w/2, h/2, w);
+      bg.addColorStop(0, '#d4e8b0'); bg.addColorStop(1, '#4a6b28');
+      return bg;
+    },
+    balloonStyle: (b, ctx) => {
+      let grad = ctx.createRadialGradient(b.x - 6, b.y - 6, 2, b.x, b.y, b.r);
+      grad.addColorStop(0, '#e8f5c8');
+      grad.addColorStop(0.4, '#4a7c2f');
+      grad.addColorStop(1, '#2d5a1a');
+      return grad;
+    },
+    stringColor: 'rgba(60, 100, 30, 0.3)',
+    particleStyle: (p) => `rgba(100, 160, 60, ${p.life * 0.8})`,
+    targetShape: 'leaf'
+  },
+  neonsynth: {
+    name: 'Neon Synth',
+    vibe: 'Nostalgic, electronic, glowing',
+    previewGradient: 'linear-gradient(135deg, #1a0033, #000011)',
+    bgGradient: (ctx, w, h) => {
+      let bg = ctx.createRadialGradient(w/2, h/2, w/6, w/2, h/2, w);
+      bg.addColorStop(0, '#1a0033'); bg.addColorStop(1, '#000011');
+      return bg;
+    },
+    balloonStyle: (b, ctx) => {
+      let grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+      grad.addColorStop(0, 'rgba(0, 255, 255, 0.12)');
+      grad.addColorStop(1, 'rgba(255, 0, 255, 0.06)');
+      return grad;
+    },
+    stringColor: 'rgba(0, 255, 255, 0)',
+    particleStyle: (p) => `rgba(0, 255, 255, ${p.life})`,
+    targetShape: 'wireframe'
+  },
+  honeycomb: {
+    name: 'Amber Honeycomb',
+    vibe: 'Slow, rich, and cozy',
+    previewGradient: 'linear-gradient(135deg, #c8860a, #3d1f00)',
+    bgGradient: (ctx, w, h) => {
+      let bg = ctx.createRadialGradient(w/2, h/2, w/6, w/2, h/2, w);
+      bg.addColorStop(0, '#c8860a'); bg.addColorStop(1, '#3d1f00');
+      return bg;
+    },
+    balloonStyle: (b, ctx) => {
+      let grad = ctx.createRadialGradient(b.x - 6, b.y - 8, 2, b.x, b.y, b.r);
+      grad.addColorStop(0, '#ffe680');
+      grad.addColorStop(0.4, '#d4860a');
+      grad.addColorStop(1, '#7a3d00');
+      return grad;
+    },
+    stringColor: 'rgba(180, 100, 10, 0.3)',
+    particleStyle: (p) => `rgba(212, 134, 10, ${p.life * 0.85})`,
+    targetShape: 'drop'
+  },
+  cloud: {
+    name: 'Cloud Dreamscape',
+    vibe: 'Weightless, fluffy, serene',
+    previewGradient: 'linear-gradient(135deg, #87ceeb, #ffb6c1)',
+    bgGradient: (ctx, w, h) => {
+      let bg = ctx.createLinearGradient(0, 0, 0, h);
+      bg.addColorStop(0, '#87ceeb'); bg.addColorStop(1, '#ffb6c1');
+      return bg;
+    },
+    balloonStyle: (b, ctx) => {
+      let grad = ctx.createRadialGradient(b.x - 6, b.y - 6, 2, b.x, b.y, b.r);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.5, '#f0f8ff');
+      grad.addColorStop(1, '#d0e8f8');
+      return grad;
+    },
+    stringColor: 'rgba(100, 160, 220, 0)',
+    particleStyle: (p) => `rgba(255, 255, 255, ${p.life * 0.6})`,
+    targetShape: 'cloud'
+  },
+  crystal_cavern: {
+    name: 'Crystal Cavern',
+    vibe: 'Quiet, echoing, luminescent',
+    previewGradient: 'linear-gradient(135deg, #1a0038, #000818)',
+    bgGradient: (ctx, w, h) => {
+      let bg = ctx.createRadialGradient(w/2, h/2, w/6, w/2, h/2, w);
+      bg.addColorStop(0, '#1a0038'); bg.addColorStop(1, '#000818');
+      return bg;
+    },
+    balloonStyle: (b, ctx) => {
+      let grad = ctx.createRadialGradient(b.x - 6, b.y - 6, 2, b.x, b.y, b.r);
+      grad.addColorStop(0, '#cc99ff');
+      grad.addColorStop(0.4, '#6622cc');
+      grad.addColorStop(1, '#1a0038');
+      return grad;
+    },
+    stringColor: 'rgba(153, 0, 255, 0.2)',
+    particleStyle: (p) => `rgba(200, 150, 255, ${p.life})`,
+    targetShape: 'gem'
+  },
+  clockwork: {
+    name: 'Vintage Clockwork',
+    vibe: 'Precise, steady, intricate',
+    previewGradient: 'linear-gradient(135deg, #6b4a14, #1a0d00)',
+    bgGradient: (ctx, w, h) => {
+      let bg = ctx.createRadialGradient(w/2, h/2, w/6, w/2, h/2, w);
+      bg.addColorStop(0, '#6b4a14'); bg.addColorStop(1, '#1a0d00');
+      return bg;
+    },
+    balloonStyle: (b, ctx) => {
+      let grad = ctx.createRadialGradient(b.x - 6, b.y - 6, 2, b.x, b.y, b.r);
+      grad.addColorStop(0, '#f0c040');
+      grad.addColorStop(0.4, '#b87333');
+      grad.addColorStop(1, '#5c3010');
+      return grad;
+    },
+    stringColor: 'rgba(180, 115, 50, 0.4)',
+    particleStyle: (p) => `rgba(190, 130, 50, ${p.life * 0.9})`,
+    targetShape: 'cog'
+  },
+  beach: {
+    name: 'Twilight Beach',
+    vibe: 'Breezy, repetitive, relaxing',
+    previewGradient: 'linear-gradient(135deg, #1a1a5e, #cc7722)',
+    bgGradient: (ctx, w, h) => {
+      let bg = ctx.createLinearGradient(0, 0, 0, h);
+      bg.addColorStop(0, '#1a1a5e');
+      bg.addColorStop(0.5, '#4b2d6e');
+      bg.addColorStop(1, '#cc7722');
+      return bg;
+    },
+    balloonStyle: (b, ctx) => {
+      let grad = ctx.createRadialGradient(b.x - 6, b.y - 6, 2, b.x, b.y, b.r);
+      grad.addColorStop(0, '#a8d8d0');
+      grad.addColorStop(0.4, '#4a9090');
+      grad.addColorStop(1, '#1a4a50');
+      return grad;
+    },
+    stringColor: 'rgba(100, 180, 180, 0)',
+    particleStyle: (p) => `rgba(150, 210, 230, ${p.life * 0.7})`,
+    targetShape: 'seaglass'
   }
 };
 
@@ -731,7 +964,7 @@ function drawThemeBalloonPreview(themeName) {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
   // Draw 4 sample balloons with different hues
-  const hues = [0, 120, 240, 45];
+  const hues = [0, 90, 200, 315];
   const startX = 30;
   const spacing = 60;
   
@@ -814,11 +1047,94 @@ function drawThemeBalloonPreviewShape(ctx, b, theme) {
     ctx.fillStyle = theme.balloonStyle(b, ctx);
     ctx.fillRect(b.x - b.r, b.y - b.r, b.r * 2, b.r * 2);
   } else if (shape === 'pebble') {
-    // Smooth pebble shape
     ctx.fillStyle = theme.balloonStyle(b, ctx);
     ctx.beginPath();
-    ctx.roundRect(b.x - b.r, b.y - b.r * 0.7, b.r * 2, b.r * 1.4, b.r * 0.3);
+    ctx.ellipse(b.x, b.y, b.r * 1.1, b.r * 0.82, Math.PI / 7, 0, Math.PI * 2);
     ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1.5; ctx.stroke();
+  } else if (shape === 'vinyl') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 1;
+    for (let ring of [0.35, 0.55, 0.75, 0.9]) {
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r * ring, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(20,5,5,0.7)';
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 0.12, 0, Math.PI * 2); ctx.fill();
+  } else if (shape === 'paper') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y - b.r); ctx.lineTo(b.x + b.r, b.y);
+    ctx.lineTo(b.x, b.y + b.r); ctx.lineTo(b.x - b.r, b.y);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(b.x, b.y - b.r); ctx.lineTo(b.x, b.y + b.r); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(b.x - b.r, b.y); ctx.lineTo(b.x + b.r, b.y); ctx.stroke();
+  } else if (shape === 'leaf') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y - b.r);
+    ctx.bezierCurveTo(b.x + b.r * 0.9, b.y - b.r * 0.5, b.x + b.r * 0.9, b.y + b.r * 0.5, b.x, b.y + b.r);
+    ctx.bezierCurveTo(b.x - b.r * 0.9, b.y + b.r * 0.5, b.x - b.r * 0.9, b.y - b.r * 0.5, b.x, b.y - b.r);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(30,80,20,0.25)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(b.x, b.y - b.r); ctx.lineTo(b.x, b.y + b.r); ctx.stroke();
+  } else if (shape === 'wireframe') {
+    const sides = 5;
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    for (let i = 0; i < sides; i++) {
+      const angle = (i * 2 * Math.PI) / sides - Math.PI / 2;
+      const px = b.x + b.r * Math.cos(angle), py = b.y + b.r * Math.sin(angle);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.shadowColor = '#00ffff'; ctx.shadowBlur = 8;
+    ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+  } else if (shape === 'drop') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y - b.r);
+    ctx.bezierCurveTo(b.x + b.r, b.y - b.r * 0.3, b.x + b.r * 0.8, b.y + b.r * 0.5, b.x, b.y + b.r);
+    ctx.bezierCurveTo(b.x - b.r * 0.8, b.y + b.r * 0.5, b.x - b.r, b.y - b.r * 0.3, b.x, b.y - b.r);
+    ctx.fill();
+  } else if (shape === 'cloud') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    [[0, -0.08, 0.62], [-0.42, 0.1, 0.42], [0.42, 0.1, 0.42], [0, 0.48, 0.38]].forEach(([dx, dy, dr]) => {
+      ctx.beginPath();
+      ctx.arc(b.x + dx * b.r, b.y + dy * b.r, dr * b.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  } else if (shape === 'gem') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y - b.r);
+    ctx.lineTo(b.x + b.r, b.y - b.r * 0.15);
+    ctx.lineTo(b.x + b.r * 0.55, b.y + b.r);
+    ctx.lineTo(b.x - b.r * 0.55, b.y + b.r);
+    ctx.lineTo(b.x - b.r, b.y - b.r * 0.15);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(220,180,255,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+  } else if (shape === 'cog') {
+    const teeth = 8; const innerR = b.r * 0.62;
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    for (let i = 0; i < teeth * 2; i++) {
+      const angle = (i * Math.PI) / teeth;
+      const radius = i % 2 === 0 ? b.r : innerR;
+      const px = b.x + radius * Math.cos(angle), py = b.y + radius * Math.sin(angle);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(20,10,0,0.45)';
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 0.28, 0, Math.PI * 2); ctx.fill();
+  } else if (shape === 'seaglass') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    ctx.ellipse(b.x, b.y, b.r * 0.88, b.r * 1.1, Math.PI / 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 2; ctx.stroke();
   } else {
     // Default circle
     ctx.fillStyle = theme.balloonStyle(b, ctx);
@@ -1229,27 +1545,137 @@ function drawBalloon(b) {
     ctx.fillStyle = theme.balloonStyle(b, ctx);
     ctx.fillRect(b.x - b.r, b.y - b.r, b.r * 2, b.r * 2);
   } else if (shape === 'pebble') {
-    // Smooth pebble shape (rounded rectangle)
+    // River stone - smooth organic oval
     ctx.fillStyle = theme.balloonStyle(b, ctx);
     ctx.beginPath();
-    ctx.roundRect(b.x - b.r, b.y - b.r * 0.7, b.r * 2, b.r * 1.4, b.r * 0.3);
+    ctx.ellipse(b.x, b.y, b.r * 1.1, b.r * 0.82, Math.PI / 7, 0, Math.PI * 2);
     ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  } else if (shape === 'vinyl') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 1;
+    for (let ring of [0.35, 0.55, 0.75, 0.9]) {
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r * ring, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(20,5,5,0.7)';
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 0.12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(212,160,23,0.5)';
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 0.33, 0, Math.PI * 2); ctx.fill();
+  } else if (shape === 'paper') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y - b.r); ctx.lineTo(b.x + b.r, b.y);
+    ctx.lineTo(b.x, b.y + b.r); ctx.lineTo(b.x - b.r, b.y);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(b.x, b.y - b.r); ctx.lineTo(b.x, b.y + b.r); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(b.x - b.r, b.y); ctx.lineTo(b.x + b.r, b.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(b.x, b.y - b.r); ctx.lineTo(b.x + b.r * 0.5, b.y + b.r * 0.5); ctx.stroke();
+  } else if (shape === 'leaf') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y - b.r);
+    ctx.bezierCurveTo(b.x + b.r * 0.9, b.y - b.r * 0.5, b.x + b.r * 0.9, b.y + b.r * 0.5, b.x, b.y + b.r);
+    ctx.bezierCurveTo(b.x - b.r * 0.9, b.y + b.r * 0.5, b.x - b.r * 0.9, b.y - b.r * 0.5, b.x, b.y - b.r);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(30,80,20,0.25)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(b.x, b.y - b.r); ctx.lineTo(b.x, b.y + b.r); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x + b.r * 0.6, b.y - b.r * 0.3); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - b.r * 0.6, b.y - b.r * 0.3); ctx.stroke();
+  } else if (shape === 'wireframe') {
+    const sides = 5;
+    ctx.save();
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    for (let i = 0; i < sides; i++) {
+      const angle = (i * 2 * Math.PI) / sides - Math.PI / 2;
+      const px = b.x + b.r * Math.cos(angle), py = b.y + b.r * Math.sin(angle);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.shadowColor = '#00ffff'; ctx.shadowBlur = 10;
+    ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.shadowColor = '#ff00ff'; ctx.shadowBlur = 6;
+    ctx.strokeStyle = '#ff00ff'; ctx.lineWidth = 1; ctx.globalAlpha = 0.6;
+    ctx.beginPath();
+    for (let i = 0; i < sides; i++) {
+      const angle = (i * 2 * Math.PI) / sides - Math.PI / 2;
+      const px = b.x + b.r * 0.45 * Math.cos(angle), py = b.y + b.r * 0.45 * Math.sin(angle);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.stroke();
+    ctx.globalAlpha = 1; ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+    ctx.restore();
+  } else if (shape === 'drop') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y - b.r);
+    ctx.bezierCurveTo(b.x + b.r, b.y - b.r * 0.3, b.x + b.r * 0.8, b.y + b.r * 0.5, b.x, b.y + b.r);
+    ctx.bezierCurveTo(b.x - b.r * 0.8, b.y + b.r * 0.5, b.x - b.r, b.y - b.r * 0.3, b.x, b.y - b.r);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,220,80,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+  } else if (shape === 'cloud') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.save();
+    ctx.shadowColor = 'rgba(200,220,255,0.4)'; ctx.shadowBlur = 6;
+    [[0, -0.08, 0.62], [-0.42, 0.1, 0.42], [0.42, 0.1, 0.42], [0, 0.48, 0.38]].forEach(([dx, dy, dr]) => {
+      ctx.beginPath();
+      ctx.arc(b.x + dx * b.r, b.y + dy * b.r, dr * b.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.shadowBlur = 0; ctx.restore();
+  } else if (shape === 'gem') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y - b.r);
+    ctx.lineTo(b.x + b.r, b.y - b.r * 0.15);
+    ctx.lineTo(b.x + b.r * 0.55, b.y + b.r);
+    ctx.lineTo(b.x - b.r * 0.55, b.y + b.r);
+    ctx.lineTo(b.x - b.r, b.y - b.r * 0.15);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(220,180,255,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(b.x, b.y - b.r); ctx.lineTo(b.x + b.r * 0.55, b.y + b.r); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(b.x, b.y - b.r); ctx.lineTo(b.x - b.r * 0.55, b.y + b.r); ctx.stroke();
+  } else if (shape === 'cog') {
+    const teeth = 8; const innerR = b.r * 0.62;
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    for (let i = 0; i < teeth * 2; i++) {
+      const angle = (i * Math.PI) / teeth;
+      const radius = i % 2 === 0 ? b.r : innerR;
+      const px = b.x + radius * Math.cos(angle), py = b.y + radius * Math.sin(angle);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = 'rgba(20,10,0,0.45)';
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 0.28, 0, Math.PI * 2); ctx.fill();
+  } else if (shape === 'seaglass') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    ctx.ellipse(b.x, b.y, b.r * 0.88, b.r * 1.1, Math.PI / 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(b.x - 3, b.y - 4, b.r * 0.38, b.r * 0.22, Math.PI / 5 - 0.3, 0, Math.PI * 2);
+    ctx.stroke();
   } else {
     // Default circle with gradient
     ctx.fillStyle = theme.balloonStyle(b, ctx);
     ctx.beginPath();
     ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
     ctx.fill();
-    
-    // Draw Knot for circles
-    if (shape !== 'pebble') {
-      ctx.fillStyle = `hsla(${b.hue}, 90%, 35%, 1)`;
-      ctx.beginPath();
-      ctx.moveTo(b.x - 4, b.y + b.r - 2);
-      ctx.lineTo(b.x + 4, b.y + b.r - 2);
-      ctx.lineTo(b.x, b.y + b.r + 6);
-      ctx.fill();
-    }
+    ctx.fillStyle = `hsla(${b.hue}, 90%, 35%, 1)`;
+    ctx.beginPath();
+    ctx.moveTo(b.x - 4, b.y + b.r - 2);
+    ctx.lineTo(b.x + 4, b.y + b.r - 2);
+    ctx.lineTo(b.x, b.y + b.r + 6);
+    ctx.fill();
   }
 }
 
