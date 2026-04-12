@@ -190,9 +190,9 @@
 
   .theme-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    padding: 12px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 10px;
     overflow-y: auto;
     flex: 1;
   }
@@ -245,6 +245,65 @@
     border: 1px solid rgba(255,255,255,0.15);
   }
 
+  #menu-confirm {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #menu-confirm-box {
+    background: rgba(20,20,30,0.97);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 16px;
+    padding: 28px 32px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+    min-width: 220px;
+  }
+
+  #menu-confirm-box p {
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0 0 20px 0;
+  }
+
+  #menu-confirm-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  #menu-confirm-yes {
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  #menu-confirm-yes:active { transform: scale(0.95); }
+
+  #menu-confirm-no {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 50px;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  #menu-confirm-no:active { transform: scale(0.95); }
+
 </style>
 </head>
 <body>
@@ -255,6 +314,16 @@
   <button class="btn" id="main-btn">TAP TO PLAY</button>
   <button class="btn" id="theme-btn" style="background: linear-gradient(135deg, #667eea, #764ba2); margin-top: 15px;">CHANGE THEME</button>
   <div class="copyright">&copy; Pollito Productions 2026</div>
+</div>
+
+<div id="menu-confirm" style="display:none;">
+  <div id="menu-confirm-box">
+    <p>Go to main menu?</p>
+    <div id="menu-confirm-btns">
+      <button id="menu-confirm-yes">Main Menu</button>
+      <button id="menu-confirm-no">Keep Playing</button>
+    </div>
+  </div>
 </div>
 
 <div id="theme-modal">
@@ -277,6 +346,9 @@
       </button>
       <button class="icon-btn" id="ingame-mute" title="Mute Music">
         <svg id="mute-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      </button>
+      <button class="icon-btn" id="ingame-menu" title="Main Menu">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a7.01 7.01 0 00-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87a.48.48 0 00.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.04.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 00-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
       </button>
     </div>
     <div class="stat-box">
@@ -898,6 +970,10 @@ const throwsEl = document.getElementById('throws');
 const resetBtn = document.getElementById('reset-btn');
 const restartIconBtn = document.getElementById('ingame-restart'); 
 const muteBtn = document.getElementById('ingame-mute');
+const menuBtn = document.getElementById('ingame-menu');
+const menuConfirm = document.getElementById('menu-confirm');
+const menuConfirmYes = document.getElementById('menu-confirm-yes');
+const menuConfirmNo = document.getElementById('menu-confirm-no');
 const muteIcon = document.getElementById('mute-icon');
 const overlay = document.getElementById('overlay');
 const mainBtn = document.getElementById('main-btn');
@@ -1217,6 +1293,28 @@ restartIconBtn.addEventListener('click', (e) => {
     startGame();
 });
 
+menuBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  menuConfirm.style.display = 'flex';
+});
+
+menuConfirmYes.addEventListener('click', (e) => {
+  e.stopPropagation();
+  menuConfirm.style.display = 'none';
+  gameRunning = false;
+  Sound.stopMusic();
+  Sound.startLoungeMusic();
+  overlayTitle.innerText = 'Zen Pop Lounge';
+  overlayMsg.innerText = 'Drag and release anywhere to throw.';
+  mainBtn.innerText = 'TAP TO PLAY';
+  overlay.style.display = 'flex';
+});
+
+menuConfirmNo.addEventListener('click', (e) => {
+  e.stopPropagation();
+  menuConfirm.style.display = 'none';
+});
+
 resetBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   resetDartPos();
@@ -1366,8 +1464,8 @@ function getPoint(e) {
 }
 
 function inputStart(e) {
-  if(e.target === restartIconBtn || e.target === muteBtn || e.target === resetBtn || 
-     muteBtn.contains(e.target) || restartIconBtn.contains(e.target)) return;
+  if(e.target === restartIconBtn || e.target === muteBtn || e.target === resetBtn || e.target === menuBtn ||
+     muteBtn.contains(e.target) || restartIconBtn.contains(e.target) || menuBtn.contains(e.target)) return;
      
   if (!gameRunning || dart.state !== 'idle') return;
   if(e.cancelable) e.preventDefault();
