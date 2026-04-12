@@ -367,6 +367,17 @@
   }
   #close-sound-btn:hover { background: rgba(255,75,43,0.5); }
 
+  #dart-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  #dart-modal.open { display: flex; }
+
   .sound-category-label {
     color: rgba(255,255,255,0.35);
     font-size: 10px;
@@ -438,6 +449,7 @@
   <button class="btn" id="main-btn">TAP TO PLAY</button>
   <button class="btn" id="theme-btn" style="background: linear-gradient(135deg, #667eea, #764ba2); margin-top: 15px;">CHANGE THEME</button>
   <button class="btn" id="sound-btn" style="background: linear-gradient(135deg, #11998e, #38ef7d); margin-top: 10px;">POP SOUND</button>
+  <button class="btn" id="dart-btn" style="background: linear-gradient(135deg, #f7971e, #ffd200); margin-top: 10px; color: #222;">DART STYLE</button>
   <div class="copyright">&copy; Pollito Productions 2026</div>
 </div>
 
@@ -448,6 +460,16 @@
       <button id="menu-confirm-yes">Main Menu</button>
       <button id="menu-confirm-no">Keep Playing</button>
     </div>
+  </div>
+</div>
+
+<div id="dart-modal">
+  <div class="sound-modal-content">
+    <div class="sound-modal-header">
+      <h3>Dart Style</h3>
+      <button id="close-dart-btn">&#x2715;</button>
+    </div>
+    <div class="sound-list" id="dart-list"></div>
   </div>
 </div>
 
@@ -1291,6 +1313,7 @@ const THEMES = {
 
 let currentTheme = 'default';
 let currentPopSound = 'balloon';
+let currentDartStyle = 'pub';
 
 // --- REFS ---
 const canvas = document.getElementById('gameCanvas');
@@ -1309,6 +1332,10 @@ const overlay = document.getElementById('overlay');
 const mainBtn = document.getElementById('main-btn');
 const themeBtn = document.getElementById('theme-btn');
 const soundBtn = document.getElementById('sound-btn');
+const dartBtn = document.getElementById('dart-btn');
+const dartModal = document.getElementById('dart-modal');
+const closeDartBtn = document.getElementById('close-dart-btn');
+const dartList = document.getElementById('dart-list');
 const soundModal = document.getElementById('sound-modal');
 const closeSoundBtn = document.getElementById('close-sound-btn');
 const soundList = document.getElementById('sound-list');
@@ -1673,6 +1700,62 @@ soundList.addEventListener('click', e => {
 const savedPopSound = localStorage.getItem('zenPopSound');
 if(savedPopSound && Sound.popSounds[savedPopSound]) currentPopSound = savedPopSound;
 
+// --- DART STYLE DATA ---
+const DART_STYLES = [
+  { key: 'pub',        name: 'Pub Dart',         category: 'Musical & Lounge',   desc: 'Classic brass dart with black flights' },
+  { key: 'stylus',     name: 'Vinyl Stylus',      category: 'Musical & Lounge',   desc: 'Shiny silver record needle' },
+  { key: 'pick',       name: 'Guitar Pick',        category: 'Musical & Lounge',   desc: 'Tortoiseshell pearlescent pick' },
+  { key: 'tuningfork', name: 'Tuning Fork',        category: 'Musical & Lounge',   desc: 'Steel fork with vibrating blur' },
+  { key: 'bamboo',     name: 'Bamboo Skewer',      category: 'Zen & Earthy',       desc: 'Smooth sharpened green bamboo' },
+  { key: 'stone',      name: 'Skipping Stone',     category: 'Zen & Earthy',       desc: 'Flat smooth river rock' },
+  { key: 'sakura',     name: 'Sakura Sprig',       category: 'Zen & Earthy',       desc: 'Cherry blossom branch with petal' },
+  { key: 'pen',        name: 'Fountain Pen Nib',   category: 'Zen & Earthy',       desc: 'Gold nib trailing dissipating ink' },
+  { key: 'paper',      name: 'Paper Airplane',     category: 'Cozy & Tactile',     desc: 'Crisp folded origami dart' },
+  { key: 'spoon',      name: 'Café Spoon',         category: 'Cozy & Tactile',     desc: 'Tiny polished demitasse spoon' },
+  { key: 'prism',      name: 'Glass Prism',        category: 'Cozy & Tactile',     desc: 'Crystal prism with rainbow trail' },
+  { key: 'frost',      name: 'Frost Shard',        category: 'Elemental',          desc: 'Jagged icicle with frosty mist' },
+  { key: 'neon',       name: 'Neon Chevron',       category: 'Elemental',          desc: 'Glowing wireframe arrowhead' },
+  { key: 'star',       name: 'Shooting Star',      category: 'Elemental',          desc: 'Light core trailing cosmic gold dust' },
+];
+
+function initDartPicker() {
+  const categories = [];
+  const seen = {};
+  DART_STYLES.forEach(s => { if(!seen[s.category]) { seen[s.category] = true; categories.push(s.category); } });
+  let html = '';
+  categories.forEach(cat => {
+    html += `<div class="sound-category-label">${cat}</div>`;
+    DART_STYLES.filter(s => s.category === cat).forEach(s => {
+      const active = s.key === currentDartStyle ? ' active' : '';
+      html += `<div class="sound-item${active}" data-dart="${s.key}">
+        <span class="sound-item-name">${s.name}</span>
+        <span class="sound-item-desc">${s.desc}</span>
+      </div>`;
+    });
+  });
+  dartList.innerHTML = html;
+}
+
+function openDartModal() { initDartPicker(); dartModal.classList.add('open'); }
+function closeDartModal() { dartModal.classList.remove('open'); }
+
+dartBtn.addEventListener('click', e => { e.stopPropagation(); openDartModal(); });
+closeDartBtn.addEventListener('click', e => { e.stopPropagation(); closeDartModal(); });
+dartModal.addEventListener('click', e => { if(e.target === dartModal) closeDartModal(); });
+
+dartList.addEventListener('click', e => {
+  const item = e.target.closest('.sound-item');
+  if(item) {
+    currentDartStyle = item.getAttribute('data-dart');
+    localStorage.setItem('zenDartStyle', currentDartStyle);
+    initDartPicker();
+  }
+});
+
+// Load saved dart style
+const savedDartStyle = localStorage.getItem('zenDartStyle');
+if(savedDartStyle && DART_DRAW[savedDartStyle]) currentDartStyle = savedDartStyle;
+
 // Load saved theme
 const savedTheme = localStorage.getItem('zenPopTheme');
 if (savedTheme && THEMES[savedTheme]) {
@@ -1752,6 +1835,7 @@ function startGame() {
   overlay.style.display = 'none';
   themeModal.classList.remove('open');
   soundModal.classList.remove('open');
+  dartModal.classList.remove('open');
   gameRunning = true;
   poppedCount = 0;
   throwCount = 0;
@@ -2210,46 +2294,250 @@ function drawBalloon(b) {
 }
 
 function drawDartObj(x, y, angle) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-  
-  ctx.shadowColor = 'rgba(0,0,0,0.5)';
-  ctx.shadowBlur = 8; ctx.shadowOffsetY = 8;
-
-  // Flight
-  ctx.beginPath();
-  ctx.moveTo(-45, -12); ctx.lineTo(-25, 0); ctx.lineTo(-45, 12); ctx.lineTo(-50, 0); ctx.closePath();
-  ctx.fillStyle = '#fff'; ctx.fill();
-  ctx.fillStyle = '#111';
-  ctx.beginPath();
-  ctx.moveTo(-45, -12); ctx.lineTo(-35, -6); ctx.lineTo(-35, 0); ctx.lineTo(-50, 0); ctx.fill();
-  ctx.moveTo(-35, 0); ctx.lineTo(-25, 0); ctx.lineTo(-35, 6); ctx.lineTo(-35, 12); ctx.fill();
-  ctx.shadowColor = 'transparent'; 
-
-  // Body
-  let bodyGrad = ctx.createLinearGradient(0, -4, 0, 4);
-  bodyGrad.addColorStop(0, '#555');   
-  bodyGrad.addColorStop(0.3, '#ddd'); 
-  bodyGrad.addColorStop(0.7, '#ddd'); 
-  bodyGrad.addColorStop(1, '#555');   
-  ctx.fillStyle = bodyGrad;
-  ctx.beginPath();
-  ctx.roundRect(-25, -4, 45, 8, 2);
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(0,0,0,0.6)';
-  ctx.lineWidth = 1;
-  for(let i=0; i<5; i++) {
-      ctx.beginPath(); ctx.moveTo(-20 + (i*6), -4); ctx.lineTo(-20 + (i*6), 4); ctx.stroke();
-  }
-  // Shaft & Tip
-  ctx.fillStyle = '#333'; ctx.fillRect(-28, -2, 3, 4);
-  ctx.fillStyle = '#eee';
-  ctx.beginPath(); ctx.moveTo(20, -2); ctx.lineTo(20, 2); ctx.lineTo(38, 0); ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-  ctx.beginPath(); ctx.moveTo(22, -1); ctx.lineTo(32, -0.5); ctx.stroke();
-  ctx.restore();
+  const style = typeof currentDartStyle !== 'undefined' ? currentDartStyle : 'pub';
+  if (DART_DRAW[style]) { DART_DRAW[style](ctx, x, y, angle); return; }
+  DART_DRAW.pub(ctx, x, y, angle);
 }
+
+const DART_DRAW = {
+  pub: function(ctx, x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 8;
+    // Flights
+    ctx.beginPath();
+    ctx.moveTo(-45, -12); ctx.lineTo(-25, 0); ctx.lineTo(-45, 12); ctx.lineTo(-50, 0); ctx.closePath();
+    ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.fillStyle = '#111';
+    ctx.beginPath(); ctx.moveTo(-45, -12); ctx.lineTo(-35, -6); ctx.lineTo(-35, 0); ctx.lineTo(-50, 0); ctx.fill();
+    ctx.moveTo(-35, 0); ctx.lineTo(-25, 0); ctx.lineTo(-35, 6); ctx.lineTo(-35, 12); ctx.fill();
+    ctx.shadowColor = 'transparent';
+    // Brass body
+    let bg = ctx.createLinearGradient(0, -4, 0, 4);
+    bg.addColorStop(0, '#7a5e1a'); bg.addColorStop(0.3, '#e8c84a'); bg.addColorStop(0.7, '#e8c84a'); bg.addColorStop(1, '#7a5e1a');
+    ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(-25, -4, 45, 8, 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 1;
+    for(let i=0; i<5; i++) { ctx.beginPath(); ctx.moveTo(-20+(i*6), -4); ctx.lineTo(-20+(i*6), 4); ctx.stroke(); }
+    ctx.fillStyle = '#555'; ctx.fillRect(-28, -2, 3, 4);
+    ctx.fillStyle = '#eee'; ctx.beginPath(); ctx.moveTo(20, -2); ctx.lineTo(20, 2); ctx.lineTo(38, 0); ctx.fill();
+    ctx.restore();
+  },
+
+  stylus: function(ctx, x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    // Needle body
+    let sg = ctx.createLinearGradient(0, -3, 0, 3);
+    sg.addColorStop(0, '#888'); sg.addColorStop(0.4, '#fff'); sg.addColorStop(1, '#888');
+    ctx.fillStyle = sg; ctx.fillRect(-30, -3, 58, 6);
+    // Tip
+    ctx.fillStyle = '#ddd'; ctx.beginPath(); ctx.moveTo(28, -2); ctx.lineTo(28, 2); ctx.lineTo(44, 0); ctx.fill();
+    // Arm back
+    ctx.fillStyle = '#444'; ctx.beginPath(); ctx.moveTo(-30, -3); ctx.lineTo(-15, 0); ctx.lineTo(-30, 3); ctx.fill();
+    // Chrome shine
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(-25, -1.5); ctx.lineTo(26, -1.5); ctx.stroke();
+    ctx.restore();
+  },
+
+  pick: function(ctx, x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    let pg = ctx.createLinearGradient(-20, -16, 16, 16);
+    pg.addColorStop(0, '#c47e2a'); pg.addColorStop(0.4, '#f5c97a'); pg.addColorStop(0.7, '#a0521a'); pg.addColorStop(1, '#6b3410');
+    ctx.fillStyle = pg;
+    ctx.beginPath();
+    ctx.moveTo(22, 0); ctx.bezierCurveTo(10, -16, -18, -16, -20, -2);
+    ctx.bezierCurveTo(-22, 8, -10, 16, 0, 16);
+    ctx.bezierCurveTo(10, 16, 22, 8, 22, 0); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1.5; ctx.stroke();
+    // Pearl shimmer
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.beginPath(); ctx.ellipse(4, -4, 10, 6, -0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  },
+
+  tuningfork: function(ctx, x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    // Blur trail
+    ctx.globalAlpha = 0.18;
+    for(let i = 1; i <= 4; i++) {
+      ctx.strokeStyle = '#aaf'; ctx.lineWidth = 2.5 - i * 0.4;
+      ctx.beginPath(); ctx.moveTo(-30 - i*7, -8); ctx.lineTo(30 - i*7, -8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-30 - i*7, 8); ctx.lineTo(30 - i*7, 8); ctx.stroke();
+    }
+    ctx.globalAlpha = 1.0;
+    // Handle
+    let hg = ctx.createLinearGradient(0, -3, 0, 3);
+    hg.addColorStop(0, '#aaa'); hg.addColorStop(0.5, '#fff'); hg.addColorStop(1, '#aaa');
+    ctx.fillStyle = hg; ctx.fillRect(-20, -3, 36, 6);
+    // Prongs
+    ctx.strokeStyle = '#ccc'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(30, -10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(30, 10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(32, -10); ctx.lineTo(32, 10); ctx.stroke();
+    ctx.restore();
+  },
+
+  bamboo: function(ctx, x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    let bg = ctx.createLinearGradient(0, -4, 0, 4);
+    bg.addColorStop(0, '#3a7c2a'); bg.addColorStop(0.4, '#7ec850'); bg.addColorStop(1, '#3a7c2a');
+    ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(-35, -3.5, 60, 7, 2); ctx.fill();
+    // Nodes
+    ctx.strokeStyle = '#2d5e20'; ctx.lineWidth = 1.5;
+    for(let i of [-18, -4, 10]) { ctx.beginPath(); ctx.moveTo(i, -4); ctx.lineTo(i, 4); ctx.stroke(); }
+    // Sharpened tip
+    ctx.fillStyle = '#d4c89a'; ctx.beginPath(); ctx.moveTo(25, -2.5); ctx.lineTo(25, 2.5); ctx.lineTo(42, 0); ctx.fill();
+    ctx.restore();
+  },
+
+  stone: function(ctx, x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    let sg = ctx.createRadialGradient(-5, -4, 2, 0, 0, 22);
+    sg.addColorStop(0, '#c8bdb0'); sg.addColorStop(0.5, '#9a8e84'); sg.addColorStop(1, '#5c5550');
+    ctx.fillStyle = sg;
+    ctx.beginPath(); ctx.ellipse(0, 0, 28, 13, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1.5; ctx.stroke();
+    // Crack detail
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(-10, -4); ctx.lineTo(2, 2); ctx.lineTo(12, -3); ctx.stroke();
+    ctx.restore();
+  },
+
+  sakura: function(ctx, x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    // Branch
+    ctx.strokeStyle = '#5c3a1e'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-32, 0); ctx.lineTo(22, 0); ctx.stroke();
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(8, 0); ctx.lineTo(18, -10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(0, -8); ctx.stroke();
+    // Petals
+    [[-5, -10], [18, -13], [4, -16]].forEach(([px, py]) => {
+      ctx.fillStyle = 'rgba(255,182,193,0.9)';
+      ctx.beginPath(); ctx.ellipse(px, py, 5, 3.5, 0.5, 0, Math.PI * 2); ctx.fill();
+    });
+    // Tip
+    ctx.fillStyle = '#5c3a1e'; ctx.beginPath(); ctx.moveTo(20, -1.5); ctx.lineTo(20, 1.5); ctx.lineTo(34, 0); ctx.fill();
+    ctx.restore();
+  },
+
+  pen: function(ctx, x, y, angle) {
+    // Ink trail
+    ctx.save();
+    ctx.translate(x, y); ctx.rotate(angle);
+    for(let i = 1; i <= 5; i++) {
+      ctx.globalAlpha = 0.06 * (6 - i);
+      ctx.fillStyle = '#1a1a4a';
+      ctx.beginPath(); ctx.ellipse(-20 - i*8, 0, 4, 2.5 - i*0.3, 0, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    // Body
+    let pg = ctx.createLinearGradient(0, -4, 0, 4);
+    pg.addColorStop(0, '#1a1230'); pg.addColorStop(0.5, '#3d2d70'); pg.addColorStop(1, '#1a1230');
+    ctx.fillStyle = pg; ctx.beginPath(); ctx.roundRect(-25, -4, 46, 8, 2); ctx.fill();
+    // Gold band
+    ctx.fillStyle = '#d4aa30';
+    ctx.beginPath(); ctx.roundRect(-26, -4.5, 8, 9, 1); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(12, -4.5, 8, 9, 1); ctx.fill();
+    // Nib
+    let ng = ctx.createLinearGradient(0, -3, 0, 3);
+    ng.addColorStop(0, '#8a6a00'); ng.addColorStop(0.5, '#f0d060'); ng.addColorStop(1, '#8a6a00');
+    ctx.fillStyle = ng; ctx.beginPath(); ctx.moveTo(20, -3); ctx.lineTo(20, 3); ctx.lineTo(38, 0); ctx.fill();
+    ctx.restore();
+  },
+
+  paper: function(ctx, x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    ctx.fillStyle = '#f5f5ee';
+    ctx.beginPath();
+    ctx.moveTo(32, 0); ctx.lineTo(10, -10); ctx.lineTo(-30, -5); ctx.lineTo(-30, 5); ctx.lineTo(10, 10); ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 0.8; ctx.stroke();
+    // Fold crease
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(-30, 0); ctx.lineTo(32, 0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(10, -10); ctx.lineTo(10, 10); ctx.stroke();
+    ctx.restore();
+  },
+
+  spoon: function(ctx, x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    let sg = ctx.createLinearGradient(0, -5, 0, 5);
+    sg.addColorStop(0, '#888'); sg.addColorStop(0.3, '#eee'); sg.addColorStop(0.7, '#eee'); sg.addColorStop(1, '#888');
+    ctx.fillStyle = sg; ctx.fillRect(-28, -3, 46, 6);
+    // Bowl
+    ctx.beginPath(); ctx.ellipse(26, 0, 9, 7, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 0.8; ctx.stroke();
+    // Handle end
+    ctx.beginPath(); ctx.ellipse(-26, 0, 5, 3, 0, 0, Math.PI * 2); ctx.fill();
+    // Shine
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(-22, -2); ctx.lineTo(18, -2); ctx.stroke();
+    ctx.restore();
+  },
+
+  prism: function(ctx, x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    // Rainbow trail
+    const rainbow = ['rgba(255,0,0,0.25)','rgba(255,165,0,0.2)','rgba(255,255,0,0.2)','rgba(0,200,0,0.2)','rgba(0,100,255,0.2)','rgba(128,0,255,0.2)'];
+    rainbow.forEach((c, i) => {
+      ctx.fillStyle = c;
+      ctx.beginPath(); ctx.ellipse(-25 - i*6, (i-2.5)*2.5, 6, 2.5, 0, 0, Math.PI*2); ctx.fill();
+    });
+    // Prism body
+    let prg = ctx.createLinearGradient(0, -14, 0, 14);
+    prg.addColorStop(0, 'rgba(180,230,255,0.9)'); prg.addColorStop(0.5, 'rgba(255,255,255,0.95)'); prg.addColorStop(1, 'rgba(200,180,255,0.9)');
+    ctx.fillStyle = prg;
+    ctx.beginPath(); ctx.moveTo(28, 0); ctx.lineTo(-12, -14); ctx.lineTo(-22, 0); ctx.lineTo(-12, 14); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+  },
+
+  frost: function(ctx, x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    // Mist trail
+    for(let i = 1; i <= 5; i++) {
+      ctx.globalAlpha = 0.07 * (6 - i);
+      ctx.fillStyle = '#a0e8ff';
+      ctx.beginPath(); ctx.ellipse(-15 - i*8, 0, 7, 4, 0, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    let ig = ctx.createLinearGradient(0, -6, 0, 6);
+    ig.addColorStop(0, '#c8f0ff'); ig.addColorStop(0.5, '#ffffff'); ig.addColorStop(1, '#a0d8f0');
+    ctx.fillStyle = ig;
+    ctx.beginPath(); ctx.moveTo(32, 0); ctx.lineTo(20, -6); ctx.lineTo(-28, -3); ctx.lineTo(-32, 0); ctx.lineTo(-28, 3); ctx.lineTo(20, 6); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(200,240,255,0.8)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+  },
+
+  neon: function(ctx, x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    ctx.shadowColor = '#0ff'; ctx.shadowBlur = 14;
+    ctx.strokeStyle = '#0ff'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(32, 0); ctx.lineTo(4, -12); ctx.lineTo(-8, 0); ctx.lineTo(4, 12); ctx.closePath(); ctx.stroke();
+    ctx.shadowColor = '#f0f'; ctx.shadowBlur = 8; ctx.strokeStyle = '#f0f'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(4, -7); ctx.lineTo(-4, 0); ctx.lineTo(4, 7); ctx.closePath(); ctx.stroke();
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+    ctx.restore();
+  },
+
+  star: function(ctx, x, y, angle) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+    // Gold dust trail
+    for(let i = 1; i <= 6; i++) {
+      const alpha = 0.12 * (7 - i);
+      ctx.fillStyle = `rgba(255,215,80,${alpha})`;
+      ctx.beginPath(); ctx.arc(-12 - i*8, (Math.sin(i * 1.3) * 5), 4 - i*0.4, 0, Math.PI*2); ctx.fill();
+    }
+    // Core glow
+    const cg = ctx.createRadialGradient(0, 0, 0, 0, 0, 18);
+    cg.addColorStop(0, 'rgba(255,255,220,1)'); cg.addColorStop(0.4, 'rgba(255,200,50,0.9)'); cg.addColorStop(1, 'rgba(255,120,0,0)');
+    ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(8, 0, 18, 0, Math.PI*2); ctx.fill();
+    // Bright core dot
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(8, 0, 5, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  },
+};
+
 
 function draw() {
   const theme = THEMES[currentTheme];
