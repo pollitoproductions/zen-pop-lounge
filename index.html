@@ -1480,8 +1480,8 @@ function drawBalloon(b) {
   const theme = THEMES[currentTheme];
   const shape = theme.targetShape;
   
-  // Draw Tail/String (skip for some shapes)
-  if (shape !== 'pebble') {
+  // Draw Tail/String (only for real balloons)
+  if (shape === 'circle') {
     ctx.strokeStyle = theme.stringColor;
     ctx.lineWidth = 1;
     ctx.beginPath();
