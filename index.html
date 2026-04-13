@@ -114,51 +114,72 @@
     color: #666; font-size: 12px; font-weight: 400; letter-spacing: 0.5px;
   }
 
-  .customize-section {
+  /* --- CUSTOMIZE MODAL --- */
+  #customize-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  #customize-modal.open { display: flex; }
+
+  .customize-modal-content {
+    background: rgba(20,20,30,0.97);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 18px;
+    width: min(92vw, 360px);
+    max-width: min(92vw, 360px);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    margin-top: 15px;
-    width: 100%;
-    max-width: 260px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
   }
 
-  .customize-toggle {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    padding: 15px 40px;
-    font-size: 20px;
-    border-radius: 50px;
-    font-weight: bold;
-    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+  .customize-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+  }
+
+  .customize-modal-header h3 {
+    color: #fff;
+    font-family: 'Limelight', cursive;
+    font-size: 22px;
+    margin: 0;
+    text-shadow: 0 0 10px rgba(255, 75, 43, 0.6);
+  }
+
+  #close-customize-btn {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    font-size: 18px; font-weight: bold;
     cursor: pointer;
-    transition: transform 0.1s;
+    transition: background 0.15s;
     outline: none;
-    font-family: 'Segoe UI', sans-serif;
-    width: 100%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
   }
-  .customize-toggle:active { transform: scale(0.95); }
+  #close-customize-btn:hover { background: rgba(255,75,43,0.5); }
 
-  .customize-items {
-    display: none;
+  .customize-body {
+    display: flex;
     flex-direction: column;
-    align-items: center;
-    width: 100%;
-    margin-top: 10px;
     gap: 10px;
-    animation: fadeSlideIn 0.25s ease;
-  }
-  .customize-items.open { display: flex; }
-
-  @keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
+    padding: 16px;
   }
 
-  .customize-items .btn {
+  .customize-body .btn {
     width: 100%;
-    margin-top: 0;
+    margin: 0;
   }
 
   /* --- SETTINGS MODAL --- */
@@ -623,14 +644,7 @@
   <h2 id="overlay-title">Zen Pop Lounge</h2>
   <p id="overlay-msg">Drag and release anywhere to throw.</p>
   <button class="btn" id="main-btn">TAP TO PLAY</button>
-  <div class="customize-section">
-    <button class="customize-toggle" id="customize-toggle">CUSTOMIZE</button>
-    <div class="customize-items" id="customize-items">
-      <button class="btn" id="theme-btn" style="background: linear-gradient(135deg, #667eea, #764ba2);">CHANGE THEME</button>
-      <button class="btn" id="sound-btn" style="background: linear-gradient(135deg, #11998e, #38ef7d);">POP SOUND</button>
-      <button class="btn" id="dart-btn" style="background: linear-gradient(135deg, #f7971e, #ffd200); color: #222;">DART STYLE</button>
-    </div>
-  </div>
+  <button class="btn" id="customize-btn" style="background: linear-gradient(135deg, #667eea, #764ba2); margin-top: 15px;">CUSTOMIZE</button>
   <button class="btn" id="settings-btn" style="background: linear-gradient(135deg, #a0a0a0, #606060); margin-top: 10px;">SETTINGS</button>
   <div class="copyright">&copy; Pollito Productions 2026</div>
 </div>
@@ -641,6 +655,20 @@
     <div id="menu-confirm-btns">
       <button id="menu-confirm-yes">Main Menu</button>
       <button id="menu-confirm-no">Keep Playing</button>
+    </div>
+  </div>
+</div>
+
+<div id="customize-modal">
+  <div class="customize-modal-content">
+    <div class="customize-modal-header">
+      <h3>Customize</h3>
+      <button id="close-customize-btn">&#x2715;</button>
+    </div>
+    <div class="customize-body">
+      <button class="btn" id="theme-btn" style="background: linear-gradient(135deg, #667eea, #764ba2);">CHANGE THEME</button>
+      <button class="btn" id="sound-btn" style="background: linear-gradient(135deg, #11998e, #38ef7d);">POP SOUND</button>
+      <button class="btn" id="dart-btn" style="background: linear-gradient(135deg, #f7971e, #ffd200); color: #222;">DART SKIN</button>
     </div>
   </div>
 </div>
@@ -658,8 +686,8 @@
         <div class="sensitivity-levels" id="sensitivity-levels">
           <button class="sensitivity-btn" data-level="1">1</button>
           <button class="sensitivity-btn" data-level="2">2</button>
-          <button class="sensitivity-btn" data-level="3">3</button>
-          <button class="sensitivity-btn active" data-level="4">4</button>
+          <button class="sensitivity-btn active" data-level="3">3</button>
+          <button class="sensitivity-btn" data-level="4">4</button>
           <button class="sensitivity-btn" data-level="5">5</button>
         </div>
       </div>
@@ -670,7 +698,7 @@
 <div id="dart-modal">
   <div class="sound-modal-content">
     <div class="sound-modal-header">
-      <h3>Dart Style</h3>
+      <h3>Dart Skin</h3>
       <button id="close-dart-btn">&#x2715;</button>
     </div>
     <div class="sound-list" id="dart-list"></div>
@@ -1521,8 +1549,9 @@ const menuConfirmNo = document.getElementById('menu-confirm-no');
 const muteIcon = document.getElementById('mute-icon');
 const overlay = document.getElementById('overlay');
 const mainBtn = document.getElementById('main-btn');
-const customizeToggle = document.getElementById('customize-toggle');
-const customizeItems = document.getElementById('customize-items');
+const customizeBtn = document.getElementById('customize-btn');
+const customizeModal = document.getElementById('customize-modal');
+const closeCustomizeBtn = document.getElementById('close-customize-btn');
 const themeBtn = document.getElementById('theme-btn');
 const soundBtn = document.getElementById('sound-btn');
 const dartBtn = document.getElementById('dart-btn');
@@ -1543,8 +1572,8 @@ const overlayTitle = document.getElementById('overlay-title');
 const overlayMsg = document.getElementById('overlay-msg');
 
 // --- SENSITIVITY ---
-const SENSITIVITY_MAP = { 1: 0.85, 2: 0.70, 3: 0.625, 4: 0.55, 5: 0.45 };
-let currentSensitivity = 4;
+const SENSITIVITY_MAP = { 1: 1.0, 2: 0.75, 3: 0.55, 4: 0.35, 5: 0.20 };
+let currentSensitivity = 3;
 
 let width, height;
 let balloons = [];
@@ -1577,10 +1606,19 @@ mainBtn.addEventListener('click', () => {
   startGame();
 });
 
-// --- CUSTOMIZE TOGGLE ---
-customizeToggle.addEventListener('click', (e) => {
+// --- CUSTOMIZE MODAL ---
+customizeBtn.addEventListener('click', (e) => {
   e.stopPropagation();
-  customizeItems.classList.toggle('open');
+  customizeModal.classList.add('open');
+});
+
+closeCustomizeBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  customizeModal.classList.remove('open');
+});
+
+customizeModal.addEventListener('click', (e) => {
+  if (e.target === customizeModal) customizeModal.classList.remove('open');
 });
 
 // --- SETTINGS ---
@@ -1610,6 +1648,7 @@ sensitivityLevels.addEventListener('click', (e) => {
 
 themeBtn.addEventListener('click', (e) => {
   e.stopPropagation();
+  customizeModal.classList.remove('open');
   openThemeSelector();
 });
 
@@ -1897,7 +1936,7 @@ function initSoundPicker() {
 function openSoundModal() { initSoundPicker(); soundModal.classList.add('open'); }
 function closeSoundModal() { soundModal.classList.remove('open'); }
 
-soundBtn.addEventListener('click', e => { e.stopPropagation(); Sound.init(); openSoundModal(); });
+soundBtn.addEventListener('click', e => { e.stopPropagation(); customizeModal.classList.remove('open'); Sound.init(); openSoundModal(); });
 closeSoundBtn.addEventListener('click', e => { e.stopPropagation(); closeSoundModal(); });
 soundModal.addEventListener('click', e => { if(e.target === soundModal) closeSoundModal(); });
 
@@ -1971,7 +2010,7 @@ function initDartPicker() {
 function openDartModal() { initDartPicker(); dartModal.classList.add('open'); }
 function closeDartModal() { dartModal.classList.remove('open'); }
 
-dartBtn.addEventListener('click', e => { e.stopPropagation(); openDartModal(); });
+dartBtn.addEventListener('click', e => { e.stopPropagation(); customizeModal.classList.remove('open'); openDartModal(); });
 closeDartBtn.addEventListener('click', e => { e.stopPropagation(); closeDartModal(); });
 dartModal.addEventListener('click', e => { if(e.target === dartModal) closeDartModal(); });
 
@@ -2024,7 +2063,6 @@ menuConfirmYes.addEventListener('click', (e) => {
   overlayTitle.innerText = 'Zen Pop Lounge';
   overlayMsg.innerText = 'Drag and release anywhere to throw.';
   mainBtn.innerText = 'TAP TO PLAY';
-  customizeItems.classList.remove('open');
   overlay.style.display = 'flex';
 });
 
