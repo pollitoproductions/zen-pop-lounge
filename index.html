@@ -2927,31 +2927,36 @@ const DART_DRAW = {
     ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
     // Drop shadow
     ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 6;
-    // Flights — yin-yang pattern
-    // White half (top)
+    // Flights — standard dart shape (two visible fins)
+    // Top fin
     ctx.beginPath();
-    ctx.moveTo(-48, -13); ctx.lineTo(-25, 0); ctx.lineTo(-53, 0); ctx.closePath();
-    ctx.fillStyle = '#fff'; ctx.fill();
-    // Black half (bottom)
-    ctx.beginPath();
-    ctx.moveTo(-48, 13); ctx.lineTo(-25, 0); ctx.lineTo(-53, 0); ctx.closePath();
-    ctx.fillStyle = '#1a1a1a'; ctx.fill();
-    // S-curve divider
-    ctx.beginPath();
-    ctx.moveTo(-53, 0);
-    ctx.bezierCurveTo(-46, -5, -36, 5, -25, 0);
-    ctx.bezierCurveTo(-36, -5, -46, 5, -53, 0);
+    ctx.moveTo(-25, -1);
+    ctx.lineTo(-32, -4);
+    ctx.bezierCurveTo(-42, -16, -54, -16, -52, -4);
+    ctx.lineTo(-48, -1);
     ctx.closePath();
     ctx.fillStyle = '#1a1a1a'; ctx.fill();
-    // Small white dot in black half
-    ctx.beginPath(); ctx.arc(-43, 3, 2.2, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
-    // Small black dot in white half
-    ctx.beginPath(); ctx.arc(-35, -3, 2.2, 0, Math.PI * 2); ctx.fillStyle = '#1a1a1a'; ctx.fill();
-    // Flight outline
-    ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 0.8;
+    // Bottom fin
     ctx.beginPath();
-    ctx.moveTo(-48, -13); ctx.lineTo(-25, 0); ctx.lineTo(-48, 13); ctx.lineTo(-53, 0); ctx.closePath();
-    ctx.stroke();
+    ctx.moveTo(-25, 1);
+    ctx.lineTo(-32, 4);
+    ctx.bezierCurveTo(-42, 16, -54, 16, -52, 4);
+    ctx.lineTo(-48, 1);
+    ctx.closePath();
+    ctx.fillStyle = '#fff'; ctx.fill();
+    // Fin outlines
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(-25, -1); ctx.lineTo(-32, -4);
+    ctx.bezierCurveTo(-42, -16, -54, -16, -52, -4);
+    ctx.lineTo(-48, -1); ctx.closePath(); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-25, 1); ctx.lineTo(-32, 4);
+    ctx.bezierCurveTo(-42, 16, -54, 16, -52, 4);
+    ctx.lineTo(-48, 1); ctx.closePath(); ctx.stroke();
+    // Center spine
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(-50, 0); ctx.lineTo(-25, 0); ctx.stroke();
     ctx.shadowColor = 'transparent';
     // Silver/metal section (first half of barrel, near flights)
     let sg = ctx.createLinearGradient(0, -3.5, 0, 3.5);
