@@ -1104,6 +1104,20 @@ const Sound = {
         gain.connect(this.masterGain);
         osc.start();
         osc.stop(t + duration + 0.1);
+        // Add a soft octave-up helper for low frequencies so they're audible on small speakers
+        if (f < 170) {
+          const osc2 = this.ctx.createOscillator();
+          const gain2 = this.ctx.createGain();
+          osc2.type = 'sine';
+          osc2.frequency.value = f * 2 + (Math.random() * 2 - 1);
+          gain2.gain.setValueAtTime(0, t);
+          gain2.gain.linearRampToValueAtTime(0.06 - (i*0.008), t + 0.05);
+          gain2.gain.exponentialRampToValueAtTime(0.001, t + duration);
+          osc2.connect(gain2);
+          gain2.connect(this.masterGain);
+          osc2.start();
+          osc2.stop(t + duration + 0.1);
+        }
     });
   },
 
