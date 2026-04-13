@@ -118,31 +118,158 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px;
+    margin-top: 15px;
     width: 100%;
     max-width: 260px;
   }
 
-  .customize-label {
-    color: rgba(255,255,255,0.45);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
+  .customize-toggle {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 20px;
+    border-radius: 50px;
+    font-weight: bold;
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    cursor: pointer;
+    transition: transform 0.1s;
+    outline: none;
+    font-family: 'Segoe UI', sans-serif;
     width: 100%;
-    text-align: center;
-    display: flex;
+  }
+  .customize-toggle:active { transform: scale(0.95); }
+
+  .customize-items {
+    display: none;
+    flex-direction: column;
     align-items: center;
-    gap: 8px;
+    width: 100%;
+    margin-top: 10px;
+    gap: 10px;
+    animation: fadeSlideIn 0.25s ease;
+  }
+  .customize-items.open { display: flex; }
+
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
-  .customize-label::before,
-  .customize-label::after {
-    content: '';
+  .customize-items .btn {
+    width: 100%;
+    margin-top: 0;
+  }
+
+  /* --- SETTINGS MODAL --- */
+  #settings-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  #settings-modal.open { display: flex; }
+
+  .settings-modal-content {
+    background: rgba(20,20,30,0.97);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 18px;
+    width: min(92vw, 420px);
+    max-width: min(92vw, 420px);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+  }
+
+  .settings-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+  }
+
+  .settings-modal-header h3 {
+    color: #fff;
+    font-family: 'Limelight', cursive;
+    font-size: 22px;
+    margin: 0;
+    text-shadow: 0 0 10px rgba(255, 75, 43, 0.6);
+  }
+
+  #close-settings-btn {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    font-size: 18px; font-weight: bold;
+    cursor: pointer;
+    transition: background 0.15s;
+    outline: none;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  #close-settings-btn:hover { background: rgba(255,75,43,0.5); }
+
+  .settings-body {
+    padding: 16px;
+    overflow-y: auto;
     flex: 1;
-    height: 1px;
-    background: rgba(255,255,255,0.15);
+  }
+
+  .setting-group {
+    margin-bottom: 20px;
+  }
+
+  .setting-group label {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .setting-group .setting-desc {
+    color: #888;
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+
+  .sensitivity-levels {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .sensitivity-btn {
+    flex: 1;
+    padding: 10px 0;
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .sensitivity-btn:hover {
+    background: rgba(255,255,255,0.13);
+    border-color: rgba(255,255,255,0.35);
+  }
+  .sensitivity-btn.active {
+    border-color: #ff4b2b;
+    background: rgba(255, 75, 43, 0.18);
+    box-shadow: 0 0 10px rgba(255, 75, 43, 0.4);
+    color: #ff7055;
   }
 
   #reset-btn { 
@@ -497,11 +624,14 @@
   <p id="overlay-msg">Drag and release anywhere to throw.</p>
   <button class="btn" id="main-btn">TAP TO PLAY</button>
   <div class="customize-section">
-    <div class="customize-label">Customize</div>
-    <button class="btn" id="theme-btn" style="background: linear-gradient(135deg, #667eea, #764ba2); width: 100%;">CHANGE THEME</button>
-    <button class="btn" id="sound-btn" style="background: linear-gradient(135deg, #11998e, #38ef7d); margin-top: 10px; width: 100%;">POP SOUND</button>
-    <button class="btn" id="dart-btn" style="background: linear-gradient(135deg, #f7971e, #ffd200); margin-top: 10px; width: 100%; color: #222;">DART STYLE</button>
+    <button class="customize-toggle" id="customize-toggle">CUSTOMIZE</button>
+    <div class="customize-items" id="customize-items">
+      <button class="btn" id="theme-btn" style="background: linear-gradient(135deg, #667eea, #764ba2);">CHANGE THEME</button>
+      <button class="btn" id="sound-btn" style="background: linear-gradient(135deg, #11998e, #38ef7d);">POP SOUND</button>
+      <button class="btn" id="dart-btn" style="background: linear-gradient(135deg, #f7971e, #ffd200); color: #222;">DART STYLE</button>
+    </div>
   </div>
+  <button class="btn" id="settings-btn" style="background: linear-gradient(135deg, #a0a0a0, #606060); margin-top: 10px;">SETTINGS</button>
   <div class="copyright">&copy; Pollito Productions 2026</div>
 </div>
 
@@ -511,6 +641,28 @@
     <div id="menu-confirm-btns">
       <button id="menu-confirm-yes">Main Menu</button>
       <button id="menu-confirm-no">Keep Playing</button>
+    </div>
+  </div>
+</div>
+
+<div id="settings-modal">
+  <div class="settings-modal-content">
+    <div class="settings-modal-header">
+      <h3>Settings</h3>
+      <button id="close-settings-btn">&#x2715;</button>
+    </div>
+    <div class="settings-body">
+      <div class="setting-group">
+        <label>Throw Sensitivity</label>
+        <div class="setting-desc">Higher = more sensitive. Default is 4.</div>
+        <div class="sensitivity-levels" id="sensitivity-levels">
+          <button class="sensitivity-btn" data-level="1">1</button>
+          <button class="sensitivity-btn" data-level="2">2</button>
+          <button class="sensitivity-btn" data-level="3">3</button>
+          <button class="sensitivity-btn active" data-level="4">4</button>
+          <button class="sensitivity-btn" data-level="5">5</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1369,9 +1521,15 @@ const menuConfirmNo = document.getElementById('menu-confirm-no');
 const muteIcon = document.getElementById('mute-icon');
 const overlay = document.getElementById('overlay');
 const mainBtn = document.getElementById('main-btn');
+const customizeToggle = document.getElementById('customize-toggle');
+const customizeItems = document.getElementById('customize-items');
 const themeBtn = document.getElementById('theme-btn');
 const soundBtn = document.getElementById('sound-btn');
 const dartBtn = document.getElementById('dart-btn');
+const settingsBtn = document.getElementById('settings-btn');
+const settingsModal = document.getElementById('settings-modal');
+const closeSettingsBtn = document.getElementById('close-settings-btn');
+const sensitivityLevels = document.getElementById('sensitivity-levels');
 const dartModal = document.getElementById('dart-modal');
 const closeDartBtn = document.getElementById('close-dart-btn');
 const dartList = document.getElementById('dart-list');
@@ -1383,6 +1541,10 @@ const closeThemeBtn = document.getElementById('close-theme-btn');
 const themeGrid = document.getElementById('theme-grid');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayMsg = document.getElementById('overlay-msg');
+
+// --- SENSITIVITY ---
+const SENSITIVITY_MAP = { 1: 0.85, 2: 0.70, 3: 0.625, 4: 0.55, 5: 0.45 };
+let currentSensitivity = 4;
 
 let width, height;
 let balloons = [];
@@ -1413,6 +1575,37 @@ mainBtn.addEventListener('click', () => {
   Sound.init();
   Sound.startLoungeMusic();
   startGame();
+});
+
+// --- CUSTOMIZE TOGGLE ---
+customizeToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  customizeItems.classList.toggle('open');
+});
+
+// --- SETTINGS ---
+settingsBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  settingsModal.classList.add('open');
+});
+
+closeSettingsBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  settingsModal.classList.remove('open');
+});
+
+settingsModal.addEventListener('click', (e) => {
+  if (e.target === settingsModal) settingsModal.classList.remove('open');
+});
+
+sensitivityLevels.addEventListener('click', (e) => {
+  const btn = e.target.closest('.sensitivity-btn');
+  if (!btn) return;
+  const level = parseInt(btn.getAttribute('data-level'));
+  currentSensitivity = level;
+  CONFIG.forceMulti = SENSITIVITY_MAP[level];
+  sensitivityLevels.querySelectorAll('.sensitivity-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
 });
 
 themeBtn.addEventListener('click', (e) => {
@@ -1831,6 +2024,7 @@ menuConfirmYes.addEventListener('click', (e) => {
   overlayTitle.innerText = 'Zen Pop Lounge';
   overlayMsg.innerText = 'Drag and release anywhere to throw.';
   mainBtn.innerText = 'TAP TO PLAY';
+  customizeItems.classList.remove('open');
   overlay.style.display = 'flex';
 });
 
@@ -2933,16 +3127,7 @@ function draw() {
      ctx.restore();
   }
 
-  if (input.active && dart.state === 'idle') {
-    ctx.beginPath();
-    ctx.moveTo(input.startX, input.startY);
-    ctx.lineTo(input.currX, input.currY);
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-    ctx.lineWidth = 4;
-    ctx.setLineDash([10, 10]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
+
 
   for (let b of balloons) { if (b.active) drawBalloon(b); }
   
