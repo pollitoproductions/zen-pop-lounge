@@ -2847,33 +2847,42 @@ const DART_DRAW = {
 
   tuningfork: function(ctx, x, y, angle) {
     ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
-    // Vibration blur trails
-    ctx.globalAlpha = 0.12;
-    for(let i = 1; i <= 5; i++) {
-      ctx.strokeStyle = 'rgba(150,150,255,0.8)'; ctx.lineWidth = 2.5 - i * 0.35;
-      const ox = -i * 7;
-      ctx.beginPath(); ctx.moveTo(-25 + ox, -9); ctx.lineTo(28 + ox, -9); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(-25 + ox, 9); ctx.lineTo(28 + ox, 9); ctx.stroke();
+    // Vibration shimmer trails
+    ctx.globalAlpha = 0.1;
+    for(let i = 1; i <= 4; i++) {
+      ctx.strokeStyle = 'rgba(180,190,255,0.8)'; ctx.lineWidth = 2.5 - i * 0.4;
+      const oy = i * 3;
+      ctx.beginPath(); ctx.moveTo(2, -16 - oy); ctx.lineTo(2, 4 - oy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(14, -16 - oy); ctx.lineTo(14, 4 - oy); ctx.stroke();
     }
     ctx.globalAlpha = 1.0;
-    ctx.shadowColor = 'rgba(0,0,0,0.25)'; ctx.shadowBlur = 5;
-    // Handle
-    let hg = ctx.createLinearGradient(0, -3.5, 0, 3.5);
-    hg.addColorStop(0, '#888'); hg.addColorStop(0.3, '#ddd'); hg.addColorStop(0.5, '#fff'); hg.addColorStop(0.7, '#ddd'); hg.addColorStop(1, '#888');
-    ctx.fillStyle = hg; ctx.beginPath(); ctx.roundRect(-22, -3.5, 40, 7, 2); ctx.fill();
+    ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 5;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    // Silver gradient for metal
+    let mg = ctx.createLinearGradient(0, -4, 0, 4);
+    mg.addColorStop(0, '#888'); mg.addColorStop(0.3, '#ddd'); mg.addColorStop(0.5, '#fff'); mg.addColorStop(0.7, '#ddd'); mg.addColorStop(1, '#888');
+    // Handle (long rod, left side)
+    ctx.fillStyle = mg;
+    ctx.beginPath(); ctx.roundRect(-22, -3, 30, 6, 2); ctx.fill();
     ctx.shadowColor = 'transparent';
-    // Prongs
-    let prg = ctx.createLinearGradient(0, -2, 0, 2);
-    prg.addColorStop(0, '#aaa'); prg.addColorStop(0.5, '#eee'); prg.addColorStop(1, '#aaa');
-    ctx.strokeStyle = '#ccc'; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(18, 0); ctx.lineTo(34, -11); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(18, 0); ctx.lineTo(34, 11); ctx.stroke();
-    // Connecting bar
-    ctx.lineWidth = 2.5;
-    ctx.beginPath(); ctx.moveTo(35, -11); ctx.lineTo(35, 11); ctx.stroke();
-    // Highlight on prongs
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(20, -1); ctx.lineTo(33, -10); ctx.stroke();
+    // Stem connecting handle to tines
+    ctx.strokeStyle = '#ccc'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(8, 0); ctx.lineTo(8, 10); ctx.stroke();
+    // Two parallel tines going forward (up in rotated space)
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = '#bbb';
+    ctx.beginPath(); ctx.moveTo(2, 10); ctx.lineTo(2, -18); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(14, 10); ctx.lineTo(14, -18); ctx.stroke();
+    // U-curve connecting the tine tips
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.moveTo(2, -18);
+    ctx.bezierCurveTo(2, -23, 14, -23, 14, -18);
+    ctx.stroke();
+    // Highlights on tines
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(1, 8); ctx.lineTo(1, -17); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(13, 8); ctx.lineTo(13, -17); ctx.stroke();
     ctx.restore();
   },
 
