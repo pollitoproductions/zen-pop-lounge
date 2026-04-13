@@ -1439,7 +1439,7 @@ const THEMES = {
     },
     stringColor: 'rgba(180, 100, 10, 0.3)',
     particleStyle: (p) => `rgba(212, 134, 10, ${p.life * 0.85})`,
-    targetShape: 'drop'
+    targetShape: 'hexagon'
   },
   cloud: {
     name: 'Cloud Dreamscape',
@@ -1829,6 +1829,19 @@ function drawThemeBalloonPreviewShape(ctx, b, theme) {
     ctx.shadowColor = '#00ffff'; ctx.shadowBlur = 8;
     ctx.strokeStyle = '#00ffff'; ctx.lineWidth = 2; ctx.stroke();
     ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+  } else if (shape === 'hexagon') {
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = (i * Math.PI) / 3 - Math.PI / 6;
+      const x = b.x + b.r * Math.cos(angle);
+      const y = b.y + b.r * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(90, 50, 0, 0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
   } else if (shape === 'drop') {
     ctx.fillStyle = theme.balloonStyle(b, ctx);
     ctx.beginPath();
@@ -2609,6 +2622,38 @@ function drawBalloon(b) {
     ctx.fillStyle = '#fff';
     ctx.beginPath(); ctx.arc(b.x, b.y, 2.5, 0, Math.PI * 2); ctx.fill();
     ctx.globalAlpha = 1; ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+    ctx.restore();
+  } else if (shape === 'hexagon') {
+    ctx.save();
+    ctx.shadowColor = 'rgba(255,180,0,0.3)'; ctx.shadowBlur = 8;
+    ctx.fillStyle = theme.balloonStyle(b, ctx);
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = (i * Math.PI) / 3 - Math.PI / 6;
+      const px = b.x + b.r * Math.cos(angle);
+      const py = b.y + b.r * Math.sin(angle);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    // Wax cell edge
+    ctx.strokeStyle = 'rgba(120, 70, 0, 0.6)'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = (i * Math.PI) / 3 - Math.PI / 6;
+      const px = b.x + b.r * Math.cos(angle);
+      const py = b.y + b.r * Math.sin(angle);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.stroke();
+    // Honey highlight
+    ctx.save();
+    ctx.globalAlpha = 0.2;
+    const hg = ctx.createRadialGradient(b.x - b.r * 0.15, b.y - b.r * 0.2, 0, b.x, b.y, b.r * 0.5);
+    hg.addColorStop(0, '#fff'); hg.addColorStop(1, 'transparent');
+    ctx.fillStyle = hg;
+    ctx.beginPath(); ctx.arc(b.x - b.r * 0.1, b.y - b.r * 0.15, b.r * 0.35, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   } else if (shape === 'drop') {
     ctx.save();
