@@ -2853,8 +2853,8 @@ const DART_DRAW = {
     for(let i = 1; i <= 4; i++) {
       ctx.strokeStyle = 'rgba(180,190,255,0.9)'; ctx.lineWidth = 2.5 - i * 0.4;
       const ox = i * 4;
-      ctx.beginPath(); ctx.moveTo(9 + ox, -9); ctx.lineTo(28 + ox, -9); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(9 + ox, 9); ctx.lineTo(28 + ox,  9); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(9 + ox, -5); ctx.lineTo(28 + ox, -5); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(9 + ox, 5); ctx.lineTo(28 + ox,  5); ctx.stroke();
     }
     ctx.globalAlpha = 1.0;
     ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 5;
@@ -2867,16 +2867,16 @@ const DART_DRAW = {
     ctx.shadowColor = 'transparent';
     // T crossbar (vertical bar at right end of handle)
     ctx.strokeStyle = '#ccc'; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.moveTo(9, -13); ctx.lineTo(9, 13); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(9, -5); ctx.lineTo(9, 5); ctx.stroke();
     // Top tine — from top tip of T, going right, open ended
     ctx.lineWidth = 3.5; ctx.strokeStyle = '#bbb';
-    ctx.beginPath(); ctx.moveTo(9, -13); ctx.lineTo(32, -13); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(9, -5); ctx.lineTo(32, -5); ctx.stroke();
     // Bottom tine — from bottom tip of T, going right, open ended
-    ctx.beginPath(); ctx.moveTo(9, 13); ctx.lineTo(32, 13); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(9, 5); ctx.lineTo(32, 5); ctx.stroke();
     // Highlights
     ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(-20, -1.5); ctx.lineTo(8, -1.5); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(10, -11.5); ctx.lineTo(31, -11.5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(10, -3.5); ctx.lineTo(31, -3.5); ctx.stroke();
     ctx.restore();
   },
 
