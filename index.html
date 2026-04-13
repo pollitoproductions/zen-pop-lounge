@@ -682,7 +682,6 @@
     <div class="settings-body">
       <div class="setting-group">
         <label>Throw Sensitivity</label>
-        <div class="setting-desc">Higher = more sensitive. Default is 4.</div>
         <div class="sensitivity-levels" id="sensitivity-levels">
           <button class="sensitivity-btn" data-level="1">1</button>
           <button class="sensitivity-btn" data-level="2">2</button>
@@ -1572,7 +1571,7 @@ const overlayTitle = document.getElementById('overlay-title');
 const overlayMsg = document.getElementById('overlay-msg');
 
 // --- SENSITIVITY ---
-const SENSITIVITY_MAP = { 1: 1.0, 2: 0.75, 3: 0.55, 4: 0.35, 5: 0.20 };
+const SENSITIVITY_MAP = { 1: 0.20, 2: 0.35, 3: 0.55, 4: 0.75, 5: 1.0 };
 let currentSensitivity = 3;
 
 let width, height;
@@ -1966,7 +1965,7 @@ if(savedPopSound && Sound.popSounds[savedPopSound]) currentPopSound = savedPopSo
 const DART_STYLES = [
   { key: 'pub',        name: 'Pub Dart',         category: 'Musical & Lounge',   desc: 'Classic brass dart with black flights' },
   { key: 'stylus',     name: 'Vinyl Stylus',      category: 'Musical & Lounge',   desc: 'Shiny silver record needle' },
-  { key: 'pick',       name: 'Guitar Pick',        category: 'Musical & Lounge',   desc: 'Tortoiseshell pearlescent pick' },
+  { key: 'pick',       name: 'Guitar Pick',        category: 'Musical & Lounge',   desc: 'Colorful rainbow gradient pick' },
   { key: 'tuningfork', name: 'Tuning Fork',        category: 'Musical & Lounge',   desc: 'Steel fork with vibrating blur' },
   { key: 'bamboo',     name: 'Bamboo Skewer',      category: 'Zen & Earthy',       desc: 'Smooth sharpened green bamboo' },
   { key: 'stone',      name: 'Skipping Stone',     category: 'Zen & Earthy',       desc: 'Flat smooth river rock' },
@@ -2806,28 +2805,30 @@ const DART_DRAW = {
 
   pick: function(ctx, x, y, angle) {
     ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
-    ctx.shadowColor = 'rgba(0,0,0,0.3)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 4;
-    // Tortoiseshell body
-    let pg = ctx.createRadialGradient(-4, -4, 2, 0, 0, 22);
-    pg.addColorStop(0, '#f5d08a'); pg.addColorStop(0.3, '#d48c2a'); pg.addColorStop(0.6, '#8a4510'); pg.addColorStop(1, '#5a2808');
+    ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 7; ctx.shadowOffsetY = 4;
+    // Colorful gradient body
+    let pg = ctx.createLinearGradient(-22, -17, 24, 18);
+    pg.addColorStop(0, '#ff4b2b'); pg.addColorStop(0.25, '#ff9a00'); pg.addColorStop(0.5, '#ffd200');
+    pg.addColorStop(0.75, '#38ef7d'); pg.addColorStop(1, '#667eea');
     ctx.fillStyle = pg;
     ctx.beginPath();
     ctx.moveTo(24, 0); ctx.bezierCurveTo(12, -17, -18, -17, -22, -2);
     ctx.bezierCurveTo(-24, 10, -10, 18, 2, 18);
     ctx.bezierCurveTo(14, 18, 24, 10, 24, 0); ctx.fill();
     ctx.shadowColor = 'transparent';
-    // Pearl sheen
-    ctx.save(); ctx.globalAlpha = 0.2;
-    let ps = ctx.createRadialGradient(2, -6, 0, 0, 0, 16);
-    ps.addColorStop(0, '#fff'); ps.addColorStop(1, 'transparent');
+    // Glossy sheen
+    ctx.save(); ctx.globalAlpha = 0.35;
+    let ps = ctx.createRadialGradient(0, -8, 0, 0, -2, 18);
+    ps.addColorStop(0, '#fff'); ps.addColorStop(0.5, 'rgba(255,255,255,0.15)'); ps.addColorStop(1, 'transparent');
     ctx.fillStyle = ps;
-    ctx.beginPath(); ctx.ellipse(2, -4, 12, 8, -0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, -5, 14, 10, -0.2, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
-    // Edge bevel
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1.5;
+    // Border outline
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(24, 0); ctx.bezierCurveTo(12, -17, -18, -17, -22, -2);
-    ctx.stroke();
+    ctx.bezierCurveTo(-24, 10, -10, 18, 2, 18);
+    ctx.bezierCurveTo(14, 18, 24, 10, 24, 0); ctx.stroke();
     ctx.restore();
   },
 
