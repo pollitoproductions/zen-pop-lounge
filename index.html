@@ -2034,9 +2034,10 @@ function selectTheme(themeName) {
     currentTheme = themeName;
     localStorage.setItem('zenPopTheme', themeName);
     initThemeSelector();
-    // Restart music with new theme
-    if (!Sound.muted && !gameRunning) {
-      Sound.stopMusic();
+    // Preview theme music immediately
+    Sound.init();
+    Sound.stopMusic();
+    if (!Sound.muted && !Sound.musicMuted) {
       Sound.startLoungeMusic();
     }
   }
