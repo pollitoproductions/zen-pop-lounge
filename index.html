@@ -784,12 +784,13 @@ const Sound = {
   resumeAudio: function() {
     if(this.ctx) {
         if(this.masterGain) this.masterGain.gain.value = 1.0;
-        if(this.ctx.state === 'suspended') {
-          this.ctx.resume().then(() => {
-            if(!this.muted) this.startLoungeMusic();
-          });
-        } else {
+        const startIfNeeded = () => {
           if(!this.muted) this.startLoungeMusic();
+        };
+        if(this.ctx.state === 'suspended') {
+          this.ctx.resume().then(startIfNeeded);
+        } else {
+          startIfNeeded();
         }
     }
   },
@@ -1017,7 +1018,7 @@ const Sound = {
         osc.type = 'sine';
         osc.frequency.value = f + (Math.random() * 2 - 1); 
         gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.08 - (i*0.01), t + 0.05); 
+        gain.gain.linearRampToValueAtTime(0.22 - (i*0.03), t + 0.05); 
         gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
         osc.connect(gain);
         gain.connect(this.masterGain);
@@ -1616,7 +1617,6 @@ window.addEventListener('beforeunload', () => Sound.killAudio());
 // --- INIT & RESIZE ---
 mainBtn.addEventListener('click', () => {
   Sound.init().then(() => {
-    Sound.startLoungeMusic();
     startGame();
   });
 });
