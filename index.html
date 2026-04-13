@@ -114,6 +114,37 @@
     color: #666; font-size: 12px; font-weight: 400; letter-spacing: 0.5px;
   }
 
+  .customize-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 260px;
+  }
+
+  .customize-label {
+    color: rgba(255,255,255,0.45);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .customize-label::before,
+  .customize-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.15);
+  }
+
   #reset-btn { 
     display: none; 
     pointer-events: auto;
@@ -465,9 +496,12 @@
   <h2 id="overlay-title">Zen Pop Lounge</h2>
   <p id="overlay-msg">Drag and release anywhere to throw.</p>
   <button class="btn" id="main-btn">TAP TO PLAY</button>
-  <button class="btn" id="theme-btn" style="background: linear-gradient(135deg, #667eea, #764ba2); margin-top: 15px;">CHANGE THEME</button>
-  <button class="btn" id="sound-btn" style="background: linear-gradient(135deg, #11998e, #38ef7d); margin-top: 10px;">POP SOUND</button>
-  <button class="btn" id="dart-btn" style="background: linear-gradient(135deg, #f7971e, #ffd200); margin-top: 10px; color: #222;">DART STYLE</button>
+  <div class="customize-section">
+    <div class="customize-label">Customize</div>
+    <button class="btn" id="theme-btn" style="background: linear-gradient(135deg, #667eea, #764ba2); width: 100%;">CHANGE THEME</button>
+    <button class="btn" id="sound-btn" style="background: linear-gradient(135deg, #11998e, #38ef7d); margin-top: 10px; width: 100%;">POP SOUND</button>
+    <button class="btn" id="dart-btn" style="background: linear-gradient(135deg, #f7971e, #ffd200); margin-top: 10px; width: 100%; color: #222;">DART STYLE</button>
+  </div>
   <div class="copyright">&copy; Pollito Productions 2026</div>
 </div>
 
