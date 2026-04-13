@@ -2848,13 +2848,13 @@ const DART_DRAW = {
     // Grip rings on silver half
     ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 0.8;
     for(let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(-20+(i*5.5), -4.5); ctx.lineTo(-20+(i*5.5), 4.5); ctx.stroke(); }
-    // Bronze/metal front half of barrel (toward tip, thinner)
-    let bg = ctx.createLinearGradient(0, -3.5, 0, 3.5);
+    // Bronze/metal front half of barrel (toward tip, slightly thicker)
+    let bg = ctx.createLinearGradient(0, -5, 0, 5);
     bg.addColorStop(0, '#6b4f12'); bg.addColorStop(0.2, '#d4a830'); bg.addColorStop(0.5, '#f0d860'); bg.addColorStop(0.8, '#d4a830'); bg.addColorStop(1, '#6b4f12');
-    ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(-1, -3.5, 24, 7, 2); ctx.fill();
+    ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(-1, -5, 24, 10, 2); ctx.fill();
     // Grip rings on bronze half
     ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 0.8;
-    for(let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(3+(i*5.5), -3.5); ctx.lineTo(3+(i*5.5), 3.5); ctx.stroke(); }
+    for(let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(3+(i*5.5), -5); ctx.lineTo(3+(i*5.5), 5); ctx.stroke(); }
     // Collar between silver and bronze
     ctx.fillStyle = '#444'; ctx.beginPath(); ctx.roundRect(-3, -3, 4, 6, 1); ctx.fill();
     // Barrel-flight collar
