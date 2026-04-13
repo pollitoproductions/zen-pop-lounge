@@ -2955,10 +2955,10 @@ const DART_DRAW = {
     ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 0.8;
     topFin(ctx); ctx.stroke();
     bottomFin(ctx); ctx.stroke();
-    // Yin-yang dots — black dot on white fin, white dot on black fin
-    ctx.beginPath(); ctx.arc(-38, -6, 2.5, 0, Math.PI * 2);
+    // Yin-yang dots — offset like a real yin-yang symbol
+    ctx.beginPath(); ctx.arc(-42, -6, 2.5, 0, Math.PI * 2);
     ctx.fillStyle = '#1a1a1a'; ctx.fill();
-    ctx.beginPath(); ctx.arc(-38, 6, 2.5, 0, Math.PI * 2);
+    ctx.beginPath(); ctx.arc(-33, 6, 2.5, 0, Math.PI * 2);
     ctx.fillStyle = '#fff'; ctx.fill();
     ctx.shadowColor = 'transparent';
     // Silver/metal section (first half of barrel, near flights)
