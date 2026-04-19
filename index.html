@@ -410,7 +410,23 @@
     font-size: 22px;
     margin: 0;
     text-shadow: 0 0 10px rgba(255, 75, 43, 0.6);
+    flex: 1; text-align: center;
   }
+
+  .back-btn {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    font-size: 18px; font-weight: bold;
+    cursor: pointer;
+    transition: background 0.15s;
+    outline: none;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .back-btn:hover { background: rgba(255,255,255,0.3); }
 
   #close-theme-btn {
     background: rgba(255,255,255,0.1);
@@ -590,6 +606,7 @@
     font-size: 20px;
     margin: 0;
     text-shadow: 0 0 10px rgba(255, 75, 43, 0.6);
+    flex: 1; text-align: center;
   }
 
   #close-sound-btn {
@@ -785,6 +802,7 @@
 <div id="dart-modal">
   <div class="sound-modal-content">
     <div class="sound-modal-header">
+      <button class="back-btn" id="back-dart-btn">&#x2190;</button>
       <h3>Dart Skin</h3>
       <button id="close-dart-btn">&#x2715;</button>
     </div>
@@ -795,6 +813,7 @@
 <div id="sound-modal">
   <div class="sound-modal-content">
     <div class="sound-modal-header">
+      <button class="back-btn" id="back-sound-btn">&#x2190;</button>
       <h3>Pop Sound</h3>
       <button id="close-sound-btn">&#x2715;</button>
     </div>
@@ -805,6 +824,7 @@
 <div id="theme-modal">
   <div class="theme-modal-content">
     <div class="theme-modal-header">
+      <button class="back-btn" id="back-theme-btn">&#x2190;</button>
       <h3>Select Theme</h3>
       <button id="close-theme-btn">&#x2715;</button>
     </div>
@@ -2235,6 +2255,9 @@ function closeDartModal() { dartModal.classList.remove('open'); }
 dartBtn.addEventListener('click', e => { e.stopPropagation(); customizeModal.classList.remove('open'); openDartModal(); });
 closeDartBtn.addEventListener('click', e => { e.stopPropagation(); closeDartModal(); });
 dartModal.addEventListener('click', e => { if(e.target === dartModal) closeDartModal(); });
+document.getElementById('back-dart-btn').addEventListener('click', e => { e.stopPropagation(); closeDartModal(); customizeModal.classList.add('open'); });
+document.getElementById('back-sound-btn').addEventListener('click', e => { e.stopPropagation(); soundModal.classList.remove('open'); customizeModal.classList.add('open'); });
+document.getElementById('back-theme-btn').addEventListener('click', e => { e.stopPropagation(); closeThemeSelector(); customizeModal.classList.add('open'); });
 
 dartList.addEventListener('click', e => {
   const item = e.target.closest('.sound-item');
