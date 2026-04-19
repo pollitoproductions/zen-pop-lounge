@@ -780,6 +780,7 @@
       <button id="close-dart-btn">&#x2715;</button>
     </div>
     <div class="sound-list" id="dart-list"></div>
+    <button class="btn" id="back-dart-btn" style="margin: 16px; background: linear-gradient(135deg, #a0a0a0, #606060);">Back</button>
   </div>
 </div>
 
@@ -790,6 +791,7 @@
       <button id="close-sound-btn">&#x2715;</button>
     </div>
     <div class="sound-list" id="sound-list"></div>
+    <button class="btn" id="back-sound-btn" style="margin: 16px; background: linear-gradient(135deg, #a0a0a0, #606060);">Back</button>
   </div>
 </div>
 
@@ -800,6 +802,7 @@
       <button id="close-theme-btn">&#x2715;</button>
     </div>
     <div class="theme-grid" id="theme-grid"></div>
+    <button class="btn" id="back-theme-btn" style="margin: 16px; background: linear-gradient(135deg, #a0a0a0, #606060);">Back</button>
   </div>
 </div>
 
@@ -1668,6 +1671,9 @@ const closeCustomizeBtn = document.getElementById('close-customize-btn');
 const themeBtn = document.getElementById('theme-btn');
 const soundBtn = document.getElementById('sound-btn');
 const dartBtn = document.getElementById('dart-btn');
+const backThemeBtn = document.getElementById('back-theme-btn');
+const backSoundBtn = document.getElementById('back-sound-btn');
+const backDartBtn = document.getElementById('back-dart-btn');
 const settingsBtn = document.getElementById('settings-btn');
 const settingsModal = document.getElementById('settings-modal');
 const closeSettingsBtn = document.getElementById('close-settings-btn');
@@ -1798,11 +1804,20 @@ sensitivityLevels.addEventListener('click', (e) => {
   btn.classList.add('active');
 });
 
+
 themeBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   customizeModal.classList.remove('open');
   openThemeSelector();
 });
+
+if (backThemeBtn) {
+  backThemeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    themeModal.classList.remove('open');
+    customizeModal.classList.add('open');
+  });
+}
 
 closeThemeBtn.addEventListener('click', (e) => {
   e.stopPropagation();
@@ -2143,6 +2158,13 @@ function openSoundModal() { initSoundPicker(); soundModal.classList.add('open');
 function closeSoundModal() { soundModal.classList.remove('open'); }
 
 soundBtn.addEventListener('click', e => { e.stopPropagation(); customizeModal.classList.remove('open'); Sound.init().then(() => openSoundModal()); });
+if (backSoundBtn) {
+  backSoundBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    soundModal.classList.remove('open');
+    customizeModal.classList.add('open');
+  });
+}
 closeSoundBtn.addEventListener('click', e => { e.stopPropagation(); closeSoundModal(); });
 soundModal.addEventListener('click', e => { if(e.target === soundModal) closeSoundModal(); });
 
@@ -2218,6 +2240,13 @@ function openDartModal() { initDartPicker(); dartModal.classList.add('open'); }
 function closeDartModal() { dartModal.classList.remove('open'); }
 
 dartBtn.addEventListener('click', e => { e.stopPropagation(); customizeModal.classList.remove('open'); openDartModal(); });
+if (backDartBtn) {
+  backDartBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dartModal.classList.remove('open');
+    customizeModal.classList.add('open');
+  });
+}
 closeDartBtn.addEventListener('click', e => { e.stopPropagation(); closeDartModal(); });
 dartModal.addEventListener('click', e => { if(e.target === dartModal) closeDartModal(); });
 
