@@ -1750,16 +1750,27 @@ mainBtn.addEventListener('click', () => {
 
 // --- REWARDED AD GATE ---
 let customizeUnlocked = false;
+let adReady = false;
 const videoSvg = '<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:white;"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>';
 const paletteSvg = '<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:white;"><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10a2.5 2.5 0 002.5-2.5c0-.61-.23-1.21-.64-1.67A.528.528 0 0113.5 17c0-.28.22-.5.5-.5H16c3.31 0 6-2.69 6-6 0-4.96-4.49-8.5-10-8.5zm-5.5 9a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3-4a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm5 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg>';
+const clockSvg = '<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:white;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>';
 
 function updateCustomizeBtn() {
   if (customizeUnlocked) {
     customizeBtn.innerHTML = paletteSvg + ' CUSTOMIZE';
     customizeBtn.style.background = 'linear-gradient(135deg, #11998e, #38ef7d)';
+    customizeBtn.disabled = false;
+    customizeBtn.style.opacity = '1';
+  } else if (!adReady && typeof Android !== 'undefined') {
+    customizeBtn.innerHTML = clockSvg + ' AD LOADING...';
+    customizeBtn.style.background = 'linear-gradient(135deg, #555, #333)';
+    customizeBtn.disabled = true;
+    customizeBtn.style.opacity = '0.7';
   } else {
     customizeBtn.innerHTML = videoSvg + ' CUSTOMIZE';
     customizeBtn.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+    customizeBtn.disabled = false;
+    customizeBtn.style.opacity = '1';
   }
 }
 
@@ -2434,7 +2445,7 @@ function showGameOver() {
   gameRunning = false;
   Sound.win();
   Sound.stopMusic();
-  if(navigator.vibrate && vibrationEnabled) navigator.vibrate([50, 50, 50]);
+  if(navigator.vibrate && vibrationEnabled) navigator.vibrate([80, 40, 80, 40, 80]);
   overlayTitle.innerText = "CLEARED!";
   overlayMsg.innerText = `You popped all ${totalBalloons} balloons in ${throwCount} throws.`;
   mainBtn.innerText = "PLAY AGAIN";
@@ -2533,7 +2544,7 @@ function update(dt) {
         poppedCount++;
         poppedEl.innerText = poppedCount;
         Sound.pop();
-        if(navigator.vibrate && vibrationEnabled) navigator.vibrate(15); 
+        if(navigator.vibrate && vibrationEnabled) navigator.vibrate(40); 
         if(activeCount <= 0) setTimeout(showGameOver, 500); 
       }
     }
@@ -3601,10 +3612,16 @@ function onAdRewarded(data) {
 }
 
 function onAdClosed(data) {
-  if (!customizeUnlocked) updateCustomizeBtn();
+  if (!customizeUnlocked) {
+    adReady = false;
+    updateCustomizeBtn();
+  }
 }
 
-function onAdReady(data) {}
+function onAdReady(data) {
+  adReady = true;
+  updateCustomizeBtn();
+}
 </script>
 </body>
 </html>
