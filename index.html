@@ -759,6 +759,15 @@
           </div>
         </div>
       </div>
+        <div class="setting-group">
+          <div class="toggle-row">
+            <label>Vibration</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="vibration-toggle" checked>
+              <span class="toggle-slider"></span>
+            </div>
+          </div>
+        </div>
       <div class="setting-group">
         <label>Throw Sensitivity</label>
         <div class="sensitivity-levels" id="sensitivity-levels">
@@ -1793,6 +1802,9 @@ settingsModal.addEventListener('click', (e) => {
 const musicToggle = document.getElementById('music-toggle');
 const popToggle = document.getElementById('pop-toggle');
 
+const vibrationToggle = document.getElementById('vibration-toggle');
+let vibrationEnabled = true;
+
 musicToggle.addEventListener('change', () => {
   Sound.musicMuted = !musicToggle.checked;
   if(Sound.musicMuted) { Sound.stopMusic(); }
@@ -1801,6 +1813,10 @@ musicToggle.addEventListener('change', () => {
 
 popToggle.addEventListener('change', () => {
   Sound.popMuted = !popToggle.checked;
+});
+
+vibrationToggle.addEventListener('change', () => {
+  vibrationEnabled = vibrationToggle.checked;
 });
 
 sensitivityLevels.addEventListener('click', (e) => {
@@ -2452,7 +2468,7 @@ function showGameOver() {
   Sound.win();
   Sound.stopMusic();
   // Stronger vibration pattern
-  if(navigator.vibrate) navigator.vibrate([120, 100, 120, 100, 120]);
+  if(vibrationEnabled && navigator.vibrate) navigator.vibrate([120, 100, 120, 100, 120]);
   overlayTitle.innerText = "CLEARED!";
   overlayMsg.innerText = `You popped all ${totalBalloons} balloons in ${throwCount} throws.`;
   mainBtn.innerText = "PLAY AGAIN";
@@ -2551,7 +2567,7 @@ function update(dt) {
         poppedCount++;
         poppedEl.innerText = poppedCount;
         Sound.pop();
-        if(navigator.vibrate) navigator.vibrate(60); // Stronger pop vibration
+        if(vibrationEnabled && navigator.vibrate) navigator.vibrate(60); // Stronger pop vibration
         if(activeCount <= 0) setTimeout(showGameOver, 500); 
       }
     }
