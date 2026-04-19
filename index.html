@@ -1745,6 +1745,8 @@ window.addEventListener('beforeunload', () => Sound.killAudio());
 
 mainBtn.addEventListener('click', () => {
   Sound.init().then(() => {
+    // Defensive: hide overlay in case it is visible
+    overlay.classList.add('hidden');
     startGame();
   });
 });
@@ -1752,7 +1754,7 @@ mainBtn.addEventListener('click', () => {
 // --- RESTORE startGame FUNCTION ---
 function startGame() {
   // Hide overlay and start/reset game state
-  overlay.classList.add('hidden');
+  if (!overlay.classList.contains('hidden')) overlay.classList.add('hidden');
   gameRunning = true;
   // Optionally reset stats, balloons, etc. if needed
   // Example: poppedCount = 0; throwCount = 0; update UI if needed
