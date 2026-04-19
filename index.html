@@ -2133,7 +2133,6 @@ function closeThemeSelector() {
 function selectTheme(themeName) {
   if (THEMES[themeName]) {
     currentTheme = themeName;
-    localStorage.setItem('zenPopTheme', themeName);
     initThemeSelector();
     // Preview theme music immediately
     Sound.init();
@@ -2195,14 +2194,9 @@ soundList.addEventListener('click', e => {
   if(item) {
     const key = item.getAttribute('data-key');
     currentPopSound = key;
-    localStorage.setItem('zenPopSound', key);
     initSoundPicker();
   }
 });
-
-// Load saved pop sound
-const savedPopSound = localStorage.getItem('zenPopSound');
-if(savedPopSound && Sound.popSounds[savedPopSound]) currentPopSound = savedPopSound;
 
 // --- DART STYLE DATA ---
 const DART_STYLES = [
@@ -2263,20 +2257,9 @@ dartList.addEventListener('click', e => {
   const item = e.target.closest('.sound-item');
   if(item) {
     currentDartStyle = item.getAttribute('data-dart');
-    localStorage.setItem('zenDartStyle', currentDartStyle);
     initDartPicker();
   }
 });
-
-// Load saved dart style
-const savedDartStyle = localStorage.getItem('zenDartStyle');
-if(savedDartStyle && DART_STYLES.some(s => s.key === savedDartStyle)) currentDartStyle = savedDartStyle;
-
-// Load saved theme
-const savedTheme = localStorage.getItem('zenPopTheme');
-if (savedTheme && THEMES[savedTheme]) {
-  currentTheme = savedTheme;
-}
 
 // Initialize theme selector UI
 initThemeSelector();
