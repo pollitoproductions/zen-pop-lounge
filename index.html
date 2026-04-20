@@ -733,6 +733,7 @@
         <button class="btn" id="customize-ad-yes" style="padding:10px 28px;">Yes</button>
         <button class="btn" id="customize-ad-no" style="background:rgba(255,255,255,0.1);color:#fff;padding:10px 28px;">No</button>
       </div>
+      <div id="ad-loading-message" style="display:none;color:#ffb74d;font-size:16px;margin-top:18px;text-align:center;">Ad is loading... If it doesn't start soon, please check your connection or try again.</div>
     </div>
   </div>
 </div>
@@ -1825,6 +1826,13 @@ customizeAdYes.addEventListener('click', (e) => {
   // Continue with ad logic
   if (typeof Android !== 'undefined' && Android.showRewardedAd) {
     customizeBtn.innerHTML = videoSvg + ' LOADING...';
+    // Show ad loading message if ad doesn't start right away
+    const adLoadingMsg = document.getElementById('ad-loading-message');
+    if (adLoadingMsg) {
+      adLoadingMsg.style.display = 'block';
+      // Hide after 10 seconds if not replaced by ad
+      setTimeout(() => { adLoadingMsg.style.display = 'none'; }, 10000);
+    }
     Android.showRewardedAd();
   } else {
     customizeUnlocked = true;
