@@ -721,7 +721,7 @@
 </div>
 
 <!-- Custom Ad Confirm Modal -->
-<div id="customize-ad-modal">
+<div id="customize-ad-modal" style="display:none;">
   <div class="customize-modal-content" style="max-width:340px;">
     <div class="customize-modal-header">
       <h3>Customize</h3>
@@ -1789,11 +1789,11 @@ customizeBtn.addEventListener('click', (e) => {
     return;
   }
   // Show the ad confirm modal
-  customizeAdModal.classList.add('open');
+  customizeAdModal.style.display = 'flex';
 });
 
 function closeAdModal() {
-  customizeAdModal.classList.remove('open');
+  customizeAdModal.style.display = 'none';
 }
 
 customizeAdNo.addEventListener('click', (e) => {
